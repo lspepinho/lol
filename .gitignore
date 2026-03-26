@@ -6,3 +6,7 @@ coverage/
 *.log
 .env*
 !.env.example
+
+# Ignorando assets a pedido do usuario
+src/assets/
+assets/
