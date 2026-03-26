@@ -319,10 +319,10 @@ export default function App() {
         });
         
         const [bgImg, towerImg, planeImg, frankfurtImg] = await Promise.all([
-          loadImg('./assets/bg.png').catch(() => null),
-          loadImg('./assets/tower.png').catch(() => null),
-          loadImg('./assets/plane.png').catch(() => null),
-          loadImg('./assets/frankfurt.png').catch(() => null)
+          loadImg('./images/bg.png').catch(() => null),
+          loadImg('./images/tower.png').catch(() => null),
+          loadImg('./images/plane.png').catch(() => null),
+          loadImg('./images/frankfurt.png').catch(() => null)
         ]);
         
         if (bgImg) bgImgRef.current = bgImg;
@@ -341,7 +341,7 @@ export default function App() {
           planeBoundsRef.current = scanImage(planeImg);
         }
       } catch (e) {
-        console.log("No local assets found in ./assets/, using placeholders.");
+        console.log("No local assets found in ./images/, using placeholders.");
       }
       startGame();
       return;
@@ -956,10 +956,10 @@ export default function App() {
         });
         
         const [bgImg, towerImg, planeImg, frankfurtImg] = await Promise.all([
-          loadImg('./assets/bg.png').catch(() => null),
-          loadImg('./assets/tower.png').catch(() => null),
-          loadImg('./assets/plane.png').catch(() => null),
-          loadImg('./assets/frankfurt.png').catch(() => null)
+          loadImg('./images/bg.png').catch(() => null),
+          loadImg('./images/tower.png').catch(() => null),
+          loadImg('./images/plane.png').catch(() => null),
+          loadImg('./images/frankfurt.png').catch(() => null)
         ]);
         
         if (bgImg) bgImgRef.current = bgImg;
