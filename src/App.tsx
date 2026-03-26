@@ -454,6 +454,12 @@ export default function App() {
     const ctx = canvas?.getContext('2d');
     if (!ctx || !canvas) return;
 
+    // Disable anti-aliasing for performance and sharp look
+    ctx.imageSmoothingEnabled = false;
+    (ctx as any).webkitImageSmoothingEnabled = false;
+    (ctx as any).mozImageSmoothingEnabled = false;
+    (ctx as any).msImageSmoothingEnabled = false;
+
     const isFrenzy = gameState === 'FRENZY' || gameState === 'DLC_FRENZY_MODE';
     const isBoss = gameState === 'BOSS_FIGHT' || gameState === 'DLC_BOSS_FIGHT';
     const isCountdown = gameState === 'COUNTDOWN';
@@ -794,11 +800,10 @@ export default function App() {
     // Collectibles
     collectiblesRef.current.forEach(c => {
       ctx.save();
-      if (c.type === 'ENERGY') { ctx.fillStyle = '#3b82f6'; ctx.shadowColor = '#3b82f6'; }
-      else if (c.type === 'COIN') { ctx.fillStyle = '#fbbf24'; ctx.shadowColor = '#fbbf24'; }
-      else { ctx.fillStyle = '#ec4899'; ctx.shadowColor = '#ec4899'; }
+      if (c.type === 'ENERGY') { ctx.fillStyle = '#3b82f6'; }
+      else if (c.type === 'COIN') { ctx.fillStyle = '#fbbf24'; }
+      else { ctx.fillStyle = '#ec4899'; }
       
-      ctx.shadowBlur = 10;
       ctx.beginPath();
       ctx.arc(c.x, c.y, 10, 0, Math.PI * 2);
       ctx.fill();
@@ -863,18 +868,12 @@ export default function App() {
         ctx.beginPath();
         ctx.arc(p.x, p.y, 8, 0, Math.PI * 2);
         ctx.fill();
-        // Glow
-        ctx.shadowBlur = 10;
-        ctx.shadowColor = 'red';
       });
-      ctx.shadowBlur = 0;
 
       // Player Projectiles
       ctx.fillStyle = '#ffff00';
       playerProjectilesRef.current.forEach(p => {
         ctx.fillRect(p.x, p.y, 15, 5);
-        ctx.shadowBlur = 5;
-        ctx.shadowColor = 'yellow';
       });
       ctx.restore();
     }
@@ -886,12 +885,7 @@ export default function App() {
     ctx.scale(-1, 1);
     
     if (isInvincible) {
-      ctx.shadowBlur = 20;
-      ctx.shadowColor = 'cyan';
-    }
-    if (feverMode) {
-      ctx.shadowBlur = 30;
-      ctx.shadowColor = 'red';
+      ctx.globalAlpha = 0.5;
     }
 
     if (planeImgRef.current) {
@@ -1263,17 +1257,17 @@ export default function App() {
             </div>
           </div>
           <div className="flex gap-1">
-            <div className="bg-black/50 backdrop-blur-md px-1 py-0.5 rounded flex items-center gap-1 border border-white/10">
+            <div className="bg-black/50 px-1 py-0.5 rounded flex items-center gap-1 border border-white/10">
               <Coins size={8} className="text-yellow-400" />
               <span className="text-[9px] font-mono">{coins}</span>
             </div>
-            <div className="bg-black/50 backdrop-blur-md px-1 py-0.5 rounded flex items-center gap-1 border border-white/10">
+            <div className="bg-black/50 px-1 py-0.5 rounded flex items-center gap-1 border border-white/10">
               <Gem size={8} className="text-blue-400" />
               <span className="text-[9px] font-mono">{gems}</span>
             </div>
             <button 
               onClick={buyEnergy}
-              className="bg-black/50 backdrop-blur-md px-1 py-0.5 rounded flex items-center gap-1 border border-white/10 hover:bg-orange-500/20 transition-colors group"
+              className="bg-black/50 px-1 py-0.5 rounded flex items-center gap-1 border border-white/10 hover:bg-orange-500/20 transition-colors group"
             >
               <Zap size={8} className="text-orange-400 group-hover:scale-125 transition-transform" />
               <span className="text-[9px] font-mono">{energy}/10</span>
@@ -1538,7 +1532,7 @@ export default function App() {
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               onClick={(e) => e.stopPropagation()}
-              className="pointer-events-auto bg-black/80 backdrop-blur-xl p-8 rounded-3xl border-2 border-white/20 flex flex-col items-center gap-6 shadow-[0_0_50px_rgba(0,0,0,0.5)]"
+            className="pointer-events-auto bg-black/80 p-8 rounded-3xl border-2 border-white/20 flex flex-col items-center gap-6 shadow-[0_0_50px_rgba(0,0,0,0.5)]"
             >
               <h1 className="text-6xl font-black italic tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-500 to-red-500 uppercase">
                 Avoid 9/11
@@ -1645,7 +1639,7 @@ export default function App() {
                       alert("NOT ENOUGH GEMS!");
                     }
                   }}
-                  className="bg-blue-600/80 backdrop-blur-md px-4 py-2 rounded-xl border-2 border-blue-400 flex flex-col items-center gap-1 hover:scale-105 transition-transform"
+                  className="bg-blue-600/80 px-4 py-2 rounded-xl border-2 border-blue-400 flex flex-col items-center gap-1 hover:scale-105 transition-transform"
                 >
                   <Shield size={20} />
                   <span className="text-[8px] font-black uppercase">SHIELD (10G)</span>
@@ -1661,7 +1655,7 @@ export default function App() {
                       alert("NOT ENOUGH GEMS!");
                     }
                   }}
-                  className="bg-purple-600/80 backdrop-blur-md px-4 py-2 rounded-xl border-2 border-purple-400 flex flex-col items-center gap-1 hover:scale-105 transition-transform"
+                  className="bg-purple-600/80 px-4 py-2 rounded-xl border-2 border-purple-400 flex flex-col items-center gap-1 hover:scale-105 transition-transform"
                 >
                   <Clock size={20} />
                   <span className="text-[8px] font-black uppercase">SLOWMO (5G)</span>
@@ -1677,7 +1671,7 @@ export default function App() {
                       alert("NOT ENOUGH GEMS!");
                     }
                   }}
-                  className="bg-red-600/80 backdrop-blur-md px-4 py-2 rounded-xl border-2 border-red-400 flex flex-col items-center gap-1 hover:scale-105 transition-transform"
+                  className="bg-red-600/80 px-4 py-2 rounded-xl border-2 border-red-400 flex flex-col items-center gap-1 hover:scale-105 transition-transform"
                 >
                   <Skull size={20} />
                   <span className="text-[8px] font-black uppercase">NUKE (20G)</span>
@@ -2001,7 +1995,7 @@ export default function App() {
             <motion.div 
               initial={{ y: 50, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              className="pointer-events-auto bg-red-950/90 backdrop-blur-2xl p-8 rounded-3xl border-4 border-red-500/50 flex flex-col items-center gap-4 max-w-sm w-full"
+              className="pointer-events-auto bg-red-950/90 p-8 rounded-3xl border-4 border-red-500/50 flex flex-col items-center gap-4 max-w-sm w-full"
             >
               <Skull size={64} className="text-red-500 animate-bounce" />
               <h2 className="text-4xl font-black text-white uppercase tracking-tighter italic">Mission Failed</h2>
@@ -2120,7 +2114,7 @@ export default function App() {
               initial={{ y: 50, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               className={cn(
-                "pointer-events-auto backdrop-blur-2xl p-8 rounded-3xl border-4 flex flex-col items-center gap-4 max-w-sm w-full",
+                "pointer-events-auto p-8 rounded-3xl border-4 flex flex-col items-center gap-4 max-w-sm w-full",
                 previousGameStateRef.current?.startsWith('DLC_') ? "bg-red-950/90 border-yellow-500/50" : "bg-green-950/90 border-green-500/50"
               )}
             >
@@ -2216,7 +2210,7 @@ export default function App() {
       </div>
 
       {/* --- Global Chat (Smaller) --- */}
-      <div className="absolute bottom-14 left-1.5 w-40 h-16 bg-black/40 backdrop-blur-sm rounded-lg border border-white/5 p-1 overflow-hidden pointer-events-none z-40">
+      <div className="absolute bottom-14 left-1.5 w-40 h-16 bg-black/40 rounded-lg border border-white/5 p-1 overflow-hidden pointer-events-none z-40">
         <div className="text-[6px] font-black text-blue-400 mb-0.5 uppercase tracking-widest">Global Chat</div>
         <div className="flex flex-col gap-0.5">
           {chatMessages.map((m) => (
@@ -2235,7 +2229,7 @@ export default function App() {
           <motion.div 
             key="artifacts-modal"
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex items-center justify-center p-4"
+            className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4"
           >
             <div className="bg-gray-900 w-full max-w-md rounded-3xl border-2 border-indigo-500/30 overflow-hidden flex flex-col">
               <div className="p-4 border-b border-white/10 flex justify-between items-center bg-gradient-to-r from-indigo-600/20 to-transparent">
@@ -2286,7 +2280,7 @@ export default function App() {
           <motion.div 
             key="battle-pass-modal"
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex items-center justify-center p-4"
+            className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4"
           >
             <div className="bg-gray-900 w-full max-w-md rounded-3xl border-2 border-purple-500/30 overflow-hidden flex flex-col h-[70vh]">
               <div className="p-4 border-b border-white/10 flex justify-between items-center bg-gradient-to-r from-purple-600/20 to-transparent">
@@ -2361,9 +2355,9 @@ export default function App() {
                 <motion.div 
                   animate={{ rotate: 360 }}
                   transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-                  className="absolute inset-0 -m-20 bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 blur-3xl opacity-50 rounded-full"
+                  className="absolute inset-0 -m-20 bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 opacity-50 rounded-full"
                 />
-                <h2 className="text-9xl font-black italic text-white uppercase tracking-tighter drop-shadow-[0_0_30px_rgba(255,255,255,0.8)] relative z-10">
+                <h2 className="text-9xl font-black italic text-white uppercase tracking-tighter relative z-10">
                   LEVEL UP!
                 </h2>
                 <div className="text-center text-4xl font-black text-yellow-500 uppercase tracking-[0.5em] mt-4 relative z-10">
@@ -2378,7 +2372,7 @@ export default function App() {
           <motion.div 
             key="missions-modal"
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex items-center justify-center p-4"
+            className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4"
           >
             <div className="bg-gray-900 w-full max-w-md rounded-3xl border-2 border-emerald-500/30 overflow-hidden flex flex-col">
               <div className="p-4 border-b border-white/10 flex justify-between items-center bg-gradient-to-r from-emerald-600/20 to-transparent">
@@ -2429,7 +2423,7 @@ export default function App() {
           <motion.div 
             key="pet-modal"
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex items-center justify-center p-4"
+            className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4"
           >
             <div className="bg-gray-900 w-full max-w-md rounded-3xl border-2 border-pink-500/30 overflow-hidden flex flex-col">
               <div className="p-4 border-b border-white/10 flex justify-between items-center bg-gradient-to-r from-pink-600/20 to-transparent">
@@ -2463,7 +2457,7 @@ export default function App() {
           <motion.div 
             key="guilds-modal"
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex items-center justify-center p-4"
+            className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4"
           >
             <div className="bg-gray-900 w-full max-w-md rounded-3xl border-2 border-slate-500/30 overflow-hidden flex flex-col h-[60vh]">
               <div className="p-4 border-b border-white/10 flex justify-between items-center bg-gradient-to-r from-slate-600/20 to-transparent">
@@ -2519,7 +2513,7 @@ export default function App() {
           <motion.div 
             key="shop-modal"
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex items-center justify-center p-4"
+            className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4"
           >
             <div className="bg-gray-900 w-full max-w-2xl rounded-3xl border-2 border-white/10 overflow-hidden flex flex-col h-[80vh]">
               <div className="p-6 border-b border-white/10 flex justify-between items-center bg-gradient-to-r from-yellow-600/20 to-transparent">
@@ -2566,7 +2560,7 @@ export default function App() {
           <motion.div 
             key="vip-modal"
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[300] bg-black/90 backdrop-blur-xl flex items-center justify-center p-4"
+            className="fixed inset-0 z-[300] bg-black/90 flex items-center justify-center p-4"
           >
             <div className="bg-gradient-to-b from-gray-800 to-gray-950 w-full max-w-lg rounded-[2rem] border-2 border-yellow-500/50 overflow-hidden shadow-[0_0_50px_rgba(234,179,8,0.2)]">
               <div className="p-8 text-center flex flex-col items-center gap-4">
@@ -2617,7 +2611,7 @@ export default function App() {
           <motion.div 
             key="daily-reward-modal"
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[400] bg-black/80 backdrop-blur-md flex items-center justify-center p-4"
+            className="fixed inset-0 z-[400] bg-black/80 flex items-center justify-center p-4"
           >
             <div className="bg-gray-900 w-full max-w-md rounded-[2rem] border-2 border-white/10 p-8 flex flex-col items-center gap-6">
               <h2 className="text-3xl font-black italic uppercase tracking-tighter text-center">7-DAY LOGIN REWARDS</h2>
@@ -2649,7 +2643,7 @@ export default function App() {
           <motion.div 
             key="stats-modal"
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex items-center justify-center p-4"
+            className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4"
           >
             <div className="bg-gray-900 w-full max-w-md rounded-3xl border-2 border-white/10 overflow-hidden">
               <div className="p-6 border-b border-white/10 flex justify-between items-center">
@@ -2732,7 +2726,7 @@ export default function App() {
           <motion.div 
             key="lootbox-modal"
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4"
+            className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4"
           >
             <div className="flex flex-col items-center gap-8">
               {showGacha ? (
@@ -2823,7 +2817,7 @@ export default function App() {
           <motion.div 
             key="leaderboard-modal"
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[500] bg-black/90 backdrop-blur-md flex items-center justify-center p-4"
+            className="fixed inset-0 z-[500] bg-black/90 flex items-center justify-center p-4"
           >
             <div className="bg-gray-900 w-full max-w-md rounded-3xl border-2 border-green-500/30 overflow-hidden flex flex-col h-[70vh]">
               <div className="p-6 border-b border-white/10 flex justify-between items-center bg-gradient-to-r from-green-600/20 to-transparent">
@@ -2877,7 +2871,7 @@ export default function App() {
           <motion.div 
             key="limited-offer-modal"
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[200] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+            className="fixed inset-0 z-[200] bg-black/80 flex items-center justify-center p-4"
           >
             <motion.div 
               initial={{ scale: 0.9, y: 20 }}
@@ -2957,7 +2951,7 @@ export default function App() {
           <motion.div 
             key="world-map-modal"
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[600] bg-black/90 backdrop-blur-md flex items-center justify-center p-4"
+            className="fixed inset-0 z-[600] bg-black/90 flex items-center justify-center p-4"
           >
             <div className="bg-gray-900 w-full max-w-2xl rounded-3xl border-2 border-white/10 overflow-hidden flex flex-col h-[80vh]">
               <div className="p-6 border-b border-white/10 flex justify-between items-center bg-gradient-to-r from-green-600/20 to-transparent">
@@ -3030,7 +3024,7 @@ export default function App() {
           <motion.div 
             key="settings-modal"
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[600] bg-black/90 backdrop-blur-md flex items-center justify-center p-4"
+            className="fixed inset-0 z-[600] bg-black/90 flex items-center justify-center p-4"
           >
             <div className="bg-gray-900 w-full max-w-md rounded-3xl border-2 border-white/10 overflow-hidden">
               <div className="p-6 border-b border-white/10 flex justify-between items-center">
@@ -3136,7 +3130,7 @@ export default function App() {
       </AnimatePresence>
 
       {/* --- Bottom Navigation (Smaller) --- */}
-      <div className="absolute bottom-0 left-0 w-full h-12 bg-gray-900/90 backdrop-blur-xl border-t border-white/10 z-50 flex justify-around items-center px-2">
+      <div className="absolute bottom-0 left-0 w-full h-12 bg-gray-900/90 border-t border-white/10 z-50 flex justify-around items-center px-2">
         <button 
           onClick={() => setGameState('START')}
           className={cn("flex flex-col items-center gap-0.5", gameState === 'START' ? "text-blue-400" : "text-gray-500")}
