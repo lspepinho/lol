@@ -32,10 +32,10 @@ import {
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { cn } from './lib/utils';
-import bgImgPath from './assets/bg.png';
-import towerImgPath from './assets/tower.png';
-import planeImgPath from './assets/plane.png';
-import frankfurtImgPath from './assets/frankfurt.png';
+import bgImgPath from './bg.png';
+import towerImgPath from './tower.png';
+import planeImgPath from './plane.png';
+import frankfurtImgPath from './frankfurt.png';
 
 // --- Constants ---
 const GRAVITY = 0.4;
