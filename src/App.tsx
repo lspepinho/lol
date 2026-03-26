@@ -32,6 +32,10 @@ import {
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { cn } from './lib/utils';
+import bgImgPath from './assets/bg.png';
+import towerImgPath from './assets/tower.png';
+import planeImgPath from './assets/plane.png';
+import frankfurtImgPath from './assets/frankfurt.png';
 
 // --- Constants ---
 const GRAVITY = 0.4;
@@ -319,10 +323,10 @@ export default function App() {
         });
         
         const [bgImg, towerImg, planeImg, frankfurtImg] = await Promise.all([
-          loadImg('./images/bg.png').catch(() => null),
-          loadImg('./images/tower.png').catch(() => null),
-          loadImg('./images/plane.png').catch(() => null),
-          loadImg('./images/frankfurt.png').catch(() => null)
+          loadImg(bgImgPath).catch(() => null),
+          loadImg(towerImgPath).catch(() => null),
+          loadImg(planeImgPath).catch(() => null),
+          loadImg(frankfurtImgPath).catch(() => null)
         ]);
         
         if (bgImg) bgImgRef.current = bgImg;
@@ -956,10 +960,10 @@ export default function App() {
         });
         
         const [bgImg, towerImg, planeImg, frankfurtImg] = await Promise.all([
-          loadImg('./images/bg.png').catch(() => null),
-          loadImg('./images/tower.png').catch(() => null),
-          loadImg('./images/plane.png').catch(() => null),
-          loadImg('./images/frankfurt.png').catch(() => null)
+          loadImg(bgImgPath).catch(() => null),
+          loadImg(towerImgPath).catch(() => null),
+          loadImg(planeImgPath).catch(() => null),
+          loadImg(frankfurtImgPath).catch(() => null)
         ]);
         
         if (bgImg) bgImgRef.current = bgImg;
