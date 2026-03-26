@@ -32,12 +32,12 @@ import {
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { cn } from './lib/utils';
-// --- Constants ---
-const bgImgPath = './bg.png';
-const towerImgPath = './tower.png';
-const planeImgPath = './plane.png';
-const frankfurtImgPath = './frankfurt.png';
+import bgImgPath from './assets/bg.png';
+import towerImgPath from './assets/tower.png';
+import planeImgPath from './assets/plane.png';
+import frankfurtImgPath from './assets/frankfurt.png';
 
+// --- Constants ---
 const GRAVITY = 0.4;
 const JUMP_STRENGTH = -7;
 const PIPE_SPEED = 4;
