@@ -41,7 +41,7 @@ import planeImg from './plane.png';
 import frankfurtImg from './frankfurt.png';
 import binImg from './bin.png';
 import bigodaoImg from './bigodao.png';
-import germanyImg from './planegermany.png';
+import vermelhoImg from './planegermany.png';
 
 const bgImgPath = bgImg;
 const towerImgPath = towerImg;
@@ -49,7 +49,7 @@ const planeImgPath = planeImg;
 const frankfurtImgPath = frankfurtImg;
 const binImgPath = binImg;
 const bigodaoImgPath = bigodaoImg;
-const germanyImgPath = germanyImg;
+const vermelhoImgPath = vermelhoImg;
 
 // --- Constants ---
 const GRAVITY = 0.4;
@@ -63,7 +63,7 @@ const CANVAS_WIDTH = 800;
 const CANVAS_HEIGHT = 600;
 
 // --- Types ---
-type GameState = 'START' | 'LOADING_REALISM' | 'PLAYING' | 'GAME_OVER' | 'VICTORY' | 'TRANSCENDENCE' | 'PENTAGON' | 'FRENZY_CUTSCENE' | 'FRENZY' | 'LIBERTY_CUTSCENE' | 'BOSS_CUTSCENE' | 'BOSS_FIGHT' | 'COUNTDOWN' | 'DLC_CLT_CUTSCENE' | 'DLC_GERMANY_INTRO' | 'DLC_GERMANY_RIDE' | 'DLC_BOSS_FIGHT' | 'DLC_LEVEL_11_CUTSCENE' | 'DLC_LEVEL_20_CUTSCENE' | 'DLC_LEVEL_40_CUTSCENE' | 'DLC_FRENZY_CUTSCENE' | 'DLC_FRENZY_MODE' | 'DLC_BOSS_CUTSCENE';
+type GameState = 'START' | 'LOADING_REALISM' | 'PLAYING' | 'GAME_OVER' | 'VICTORY' | 'TRANSCENDENCE' | 'PENTAGON' | 'FRENZY_CUTSCENE' | 'FRENZY' | 'LIBERTY_CUTSCENE' | 'BOSS_CUTSCENE' | 'BOSS_FIGHT' | 'COUNTDOWN' | 'DLC_CLT_CUTSCENE' | 'DLC_VERMELHO_INTRO' | 'DLC_VERMELHO_RIDE' | 'DLC_BOSS_FIGHT' | 'DLC_LEVEL_11_CUTSCENE' | 'DLC_LEVEL_20_CUTSCENE' | 'DLC_LEVEL_40_CUTSCENE' | 'DLC_FRENZY_CUTSCENE' | 'DLC_FRENZY_MODE' | 'DLC_BOSS_CUTSCENE';
 
 type BPTier = 'STANDARD' | 'PLUS' | 'PRO';
 
@@ -120,12 +120,7 @@ const SKINS: Skin[] = [
   { id: 'red_plane', name: 'Crimson Flyer', type: 'PLANE', color: '#ef4444', rarity: 'RARE' },
   { id: 'blue_plane', name: 'Azure Sky', type: 'PLANE', color: '#3b82f6', rarity: 'RARE' },
   { id: 'gold_plane', name: 'Golden Wings', type: 'PLANE', color: '#eab308', rarity: 'LEGENDARY' },
-  { id: 'germany_plane', name: 'Germany', type: 'PLANE', rarity: 'LEGENDARY', price: 5000, currency: 'COINS' },
-  { id: 'default_pilot', name: 'Lixo de Lado', type: 'PILOT', rarity: 'COMMON' },
-  { id: 'cool_pilot', name: 'Ace Pilot', type: 'PILOT', color: '#3b82f6', rarity: 'EPIC' },
-  { id: 'none_bigodao', name: 'No Passenger', type: 'BIGODAO', rarity: 'COMMON' },
-  { id: 'default_bigodao', name: 'Bigodão', type: 'BIGODAO', rarity: 'COMMON' },
-  { id: 'gold_bigodao', name: 'Golden Bigodão', type: 'BIGODAO', color: '#eab308', rarity: 'LEGENDARY' },
+  { id: 'vermelho_plane', name: 'Vermelho', type: 'PLANE', rarity: 'LEGENDARY', price: 5000, currency: 'COINS' },
 ];
 
 const WEAPONS: Weapon[] = [
@@ -151,7 +146,7 @@ const ITEMS: Item[] = [
   { id: '1', name: 'God Mode (1 Game)', rarity: 'MYTHIC', price: 4.99, currency: 'USD', effect: 'Infinite HP' },
   { id: '2', name: 'Nuke Pack (5x)', rarity: 'EPIC', price: 1.99, currency: 'USD', effect: 'Clear Screen' },
   { id: '3', name: 'Extra Lives (10x)', rarity: 'RARE', price: 2.99, currency: 'USD', effect: 'Revive 10x' },
-  { id: '4', name: 'Infinite Energy (24h)', rarity: 'MYTHIC', price: 9.99, currency: 'USD', effect: 'Play forever' },
+  { id: '4', name: 'Skill Orb Pack (50x)', rarity: 'MYTHIC', price: 9.99, currency: 'USD', effect: 'Get 50 Skills' },
   { id: '5', name: 'ULTRA VALUE PACK', rarity: 'MYTHIC', price: 99.99, currency: 'USD', effect: '1000 Gems + 10k Coins + 30 SP' },
   { id: '6', name: 'Skill Boost (25 SP)', rarity: 'LEGENDARY', price: 49.99, currency: 'USD', effect: '+25 Skill Points' },
 ];
@@ -208,7 +203,7 @@ const BP_REWARDS = [
   // Level 15
   { level: 15, reward: '1500 Coins', type: 'COINS', value: 1500, tier: 'STANDARD' },
   { level: 15, reward: '50 Gems', type: 'GEMS', value: 50, tier: 'PLUS' },
-  { level: 15, reward: 'Ace Pilot Skin', type: 'SKIN', value: 'cool_pilot', tier: 'PRO' },
+  { level: 15, reward: '200 Gems', type: 'GEMS', value: 200, tier: 'PRO' },
   // Level 20
   { level: 20, reward: '2000 Coins', type: 'COINS', value: 2000, tier: 'STANDARD' },
   { level: 20, reward: '100 Gems', type: 'GEMS', value: 100, tier: 'PLUS' },
@@ -216,7 +211,7 @@ const BP_REWARDS = [
   // Level 25
   { level: 25, reward: '3000 Coins', type: 'COINS', value: 3000, tier: 'STANDARD' },
   { level: 25, reward: '150 Gems', type: 'GEMS', value: 150, tier: 'PLUS' },
-  { level: 25, reward: 'Golden Bigodão', type: 'SKIN', value: 'gold_bigodao', tier: 'PRO' },
+  { level: 25, reward: '300 Gems', type: 'GEMS', value: 300, tier: 'PRO' },
   // Level 30
   { level: 30, reward: '5000 Coins', type: 'COINS', value: 5000, tier: 'STANDARD' },
   { level: 30, reward: '200 Gems', type: 'GEMS', value: 200, tier: 'PLUS' },
@@ -232,7 +227,7 @@ const BP_REWARDS = [
   // Level 45
   { level: 45, reward: '15000 Coins', type: 'COINS', value: 15000, tier: 'STANDARD' },
   { level: 45, reward: '750 Gems', type: 'GEMS', value: 750, tier: 'PLUS' },
-  { level: 45, reward: 'Infinite Energy', type: 'ITEM', value: '4', tier: 'PRO' },
+  { level: 45, reward: 'Skill Orb Pack', type: 'ITEM', value: '4', tier: 'PRO' },
   // Level 50
   { level: 50, reward: '25000 Coins', type: 'COINS', value: 25000, tier: 'STANDARD' },
   { level: 50, reward: '1000 Gems', type: 'GEMS', value: 1000, tier: 'PLUS' },
@@ -261,14 +256,13 @@ export default function App() {
   const planeImgRef = useRef<HTMLImageElement | null>(null);
   const binImgRef = useRef<HTMLImageElement | null>(null);
   const bigodaoImgRef = useRef<HTMLImageElement | null>(null);
-  const germanyImgRef = useRef<HTMLImageElement | null>(null);
+  const vermelhoImgRef = useRef<HTMLImageElement | null>(null);
 
   // --- RPG / Meta State ---
   const [level, setLevel] = useState(1);
   const [xp, setXp] = useState(0);
   const [coins, setCoins] = useState(100);
   const [gems, setGems] = useState(10);
-  const [energy, setEnergy] = useState(10);
   const [skillPoints, setSkillPoints] = useState(5);
   const [vipLevel, setVipLevel] = useState(0);
   const [petLevel, setPetLevel] = useState(1);
@@ -286,10 +280,8 @@ export default function App() {
   const [battlePassXp, setBattlePassXp] = useState(0);
   const [bpTier, setBpTier] = useState<BPTier>('STANDARD');
   const [ownedBpTiers, setOwnedBpTiers] = useState<BPTier[]>(['STANDARD']);
-  const [ownedSkins, setOwnedSkins] = useState<string[]>(['default_plane', 'default_pilot', 'none_bigodao', 'default_bigodao']);
+  const [ownedSkins, setOwnedSkins] = useState<string[]>(['default_plane']);
   const [equippedPlaneSkin, setEquippedPlaneSkin] = useState('default_plane');
-  const [equippedPilotSkin, setEquippedPilotSkin] = useState('default_pilot');
-  const [equippedBigodaoSkin, setEquippedBigodaoSkin] = useState('none_bigodao');
   const [ownedWeapons, setOwnedWeapons] = useState<string[]>(['none']);
   const [equippedWeapon, setEquippedWeapon] = useState('none');
   const [redeemedCodes, setRedeemedCodes] = useState<string[]>([]);
@@ -306,7 +298,7 @@ export default function App() {
   const playerProjectilesRef = useRef<{ x: number; y: number }[]>([]);
   const lastBossShotRef = useRef<number>(0);
   const previousGameStateRef = useRef<GameState>('PLAYING');
-  const collectiblesRef = useRef<{ x: number; y: number; type: 'ENERGY' | 'COIN' | 'GEM'; id: number }[]>([]);
+  const collectiblesRef = useRef<{ x: number; y: number; type: 'SKILL' | 'SKILL_POINT' | 'COIN' | 'GEM'; id: number }[]>([]);
   const lastCollectibleSpawnRef = useRef<number>(0);
   const lastWeaponUseRef = useRef<number>(0);
 
@@ -322,7 +314,6 @@ export default function App() {
         if (data.xp !== undefined) setXp(data.xp);
         if (data.coins !== undefined) setCoins(data.coins);
         if (data.gems !== undefined) setGems(data.gems);
-        if (data.energy !== undefined) setEnergy(data.energy);
         if (data.artifacts !== undefined) setArtifacts(data.artifacts);
         if (data.claimedAchievements !== undefined) setClaimedAchievements(data.claimedAchievements);
         if (data.battlePassXp !== undefined) setBattlePassXp(data.battlePassXp);
@@ -330,8 +321,6 @@ export default function App() {
         if (data.ownedBpTiers !== undefined) setOwnedBpTiers(data.ownedBpTiers);
         if (data.ownedSkins !== undefined) setOwnedSkins(data.ownedSkins);
         if (data.equippedPlaneSkin !== undefined) setEquippedPlaneSkin(data.equippedPlaneSkin);
-        if (data.equippedPilotSkin !== undefined) setEquippedPilotSkin(data.equippedPilotSkin);
-        if (data.equippedBigodaoSkin !== undefined) setEquippedBigodaoSkin(data.equippedBigodaoSkin);
         if (data.ownedWeapons !== undefined) setOwnedWeapons(data.ownedWeapons);
         if (data.equippedWeapon !== undefined) setEquippedWeapon(data.equippedWeapon);
         if (data.redeemedCodes !== undefined) setRedeemedCodes(data.redeemedCodes);
@@ -351,7 +340,6 @@ export default function App() {
       xp,
       coins,
       gems,
-      energy,
       artifacts,
       claimedAchievements,
       battlePassXp,
@@ -359,8 +347,6 @@ export default function App() {
       ownedBpTiers,
       ownedSkins,
       equippedPlaneSkin,
-      equippedPilotSkin,
-      equippedBigodaoSkin,
       ownedWeapons,
       equippedWeapon,
       redeemedCodes,
@@ -368,7 +354,7 @@ export default function App() {
       isDlcUnlocked
     };
     localStorage.setItem('slop_save', JSON.stringify(data));
-  }, [highScore, dlcHighScore, level, xp, coins, gems, energy, artifacts, claimedAchievements, battlePassXp, claimedBpRewards, isDlcUnlocked]);
+  }, [highScore, dlcHighScore, level, xp, coins, gems, artifacts, claimedAchievements, battlePassXp, claimedBpRewards, isDlcUnlocked]);
 
   const scanImage = (img: HTMLImageElement) => {
     if (!img || img.width === 0 || img.height === 0) {
@@ -486,14 +472,14 @@ export default function App() {
   const generateRealism = async (force = false, retryCount = 0) => {
     if (!useAiRealism) {
       try {
-        const [bgImg, towerImg, planeImg, frankfurtImg, binImg, bigodaoImg, germanyImg] = await Promise.all([
+        const [bgImg, towerImg, planeImg, frankfurtImg, binImg, bigodaoImg, vermelhoImgLoaded] = await Promise.all([
           loadImg(bgImgPath),
           loadImg(towerImgPath),
           loadImg(planeImgPath),
           loadImg(frankfurtImgPath),
           loadImg(binImgPath),
           loadImg(bigodaoImgPath),
-          loadImg(germanyImgPath)
+          loadImg(vermelhoImgPath)
         ]);
         
         if (bgImg) bgImgRef.current = bgImg;
@@ -513,7 +499,7 @@ export default function App() {
         }
         if (binImg) binImgRef.current = binImg;
         if (bigodaoImg) bigodaoImgRef.current = bigodaoImg;
-        if (germanyImg) germanyImgRef.current = germanyImg;
+        if (vermelhoImgLoaded) vermelhoImgRef.current = vermelhoImgLoaded;
       } catch (e) {
         console.log("No local assets found in ./images/, using placeholders.");
       }
@@ -663,7 +649,7 @@ export default function App() {
     const isCountdown = gameState === 'COUNTDOWN';
 
     // If not in an active state, stop
-    if (!isCountdown && gameState !== 'PLAYING' && gameState !== 'DLC_GERMANY_RIDE' && !isFrenzy && !isBoss) return;
+    if (!isCountdown && gameState !== 'PLAYING' && gameState !== 'DLC_VERMELHO_RIDE' && !isFrenzy && !isBoss) return;
 
     // Physics & Logic (only if not countdown)
     if (!isCountdown) {
@@ -698,8 +684,9 @@ export default function App() {
           const currentFaith = stats[3].value;
           const faithChance = currentFaith * 0.01;
           
-          let type: 'ENERGY' | 'COIN' | 'GEM' = 'COIN';
-          if (typeRand < 0.1) type = 'ENERGY';
+          let type: 'SKILL' | 'SKILL_POINT' | 'COIN' | 'GEM' = 'COIN';
+          if (typeRand < 0.05) type = 'SKILL';
+          else if (typeRand < 0.1) type = 'SKILL_POINT';
           else if (typeRand < 0.2 + faithChance) type = 'GEM';
           
           collectiblesRef.current.push({
@@ -781,7 +768,11 @@ export default function App() {
       collectiblesRef.current.forEach((c, idx) => {
         const dist = Math.hypot(c.x - 100, c.y - planeYRef.current);
         if (dist < 40) {
-          if (c.type === 'ENERGY') setEnergy(prev => Math.min(10, prev + 1));
+          if (c.type === 'SKILL') {
+            setIsInvincible(true);
+            setTimeout(() => setIsInvincible(false), 5000);
+          }
+          if (c.type === 'SKILL_POINT') setSkillPoints(prev => prev + 1);
           if (c.type === 'COIN') setCoins(prev => prev + 20);
           if (c.type === 'GEM') setGems(prev => prev + 2);
           collectiblesRef.current.splice(idx, 1);
@@ -856,7 +847,7 @@ export default function App() {
         setScore(s => {
           const next = s + 1;
           // Normal mode cutscenes
-          if (!(gameState === 'DLC_GERMANY_RIDE' || gameState === 'DLC_FRENZY_MODE')) {
+          if (!(gameState === 'DLC_VERMELHO_RIDE' || gameState === 'DLC_FRENZY_MODE')) {
             if (next === 11) { setGameState('TRANSCENDENCE'); planeYRef.current = 300; velocityRef.current = 0; }
             if (next === 20) { setGameState('PENTAGON'); planeYRef.current = 300; velocityRef.current = 0; }
             if (next === 30) { setGameState('FRENZY_CUTSCENE'); planeYRef.current = 300; velocityRef.current = 0; }
@@ -866,7 +857,7 @@ export default function App() {
           return next;
         });
 
-        if (gameState === 'DLC_GERMANY_RIDE' || gameState === 'DLC_FRENZY_MODE') {
+        if (gameState === 'DLC_VERMELHO_RIDE' || gameState === 'DLC_FRENZY_MODE') {
           setDlcLevel(l => {
             const next = l + 1;
             if (next === 11) { setGameState('DLC_LEVEL_11_CUTSCENE'); planeYRef.current = 300; velocityRef.current = 0; }
@@ -998,13 +989,42 @@ export default function App() {
     // Collectibles
     collectiblesRef.current.forEach(c => {
       ctx.save();
-      if (c.type === 'ENERGY') { ctx.fillStyle = '#3b82f6'; }
-      else if (c.type === 'COIN') { ctx.fillStyle = '#fbbf24'; }
-      else { ctx.fillStyle = '#ec4899'; }
-      
-      ctx.beginPath();
-      ctx.arc(c.x, c.y, 10, 0, Math.PI * 2);
-      ctx.fill();
+      if (c.type === 'SKILL') {
+        ctx.fillStyle = '#a855f7';
+        ctx.shadowColor = '#a855f7';
+        ctx.shadowBlur = 15;
+        ctx.beginPath();
+        ctx.arc(c.x, c.y, 12, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = 'white';
+        ctx.font = '16px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('✨', c.x, c.y);
+      } else if (c.type === 'SKILL_POINT') {
+        ctx.fillStyle = '#10b981';
+        ctx.shadowColor = '#10b981';
+        ctx.shadowBlur = 15;
+        ctx.beginPath();
+        ctx.arc(c.x, c.y, 12, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = 'white';
+        ctx.font = 'bold 12px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('SP', c.x, c.y);
+      } else {
+        if (c.type === 'COIN') { ctx.fillStyle = '#fbbf24'; }
+        else { ctx.fillStyle = '#ec4899'; }
+        
+        ctx.beginPath();
+        ctx.arc(c.x, c.y, 10, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = 'white';
+        ctx.stroke();
+      }
       ctx.restore();
     });
 
@@ -1087,16 +1107,14 @@ export default function App() {
     }
 
     const currentPlaneSkin = SKINS.find(s => s.id === equippedPlaneSkin);
-    const currentPilotSkin = SKINS.find(s => s.id === equippedPilotSkin);
-    const currentBigodaoSkin = SKINS.find(s => s.id === equippedBigodaoSkin);
 
     let activePlaneImg = planeImgRef.current;
-    if (equippedPlaneSkin === 'germany_plane' && germanyImgRef.current) {
-      activePlaneImg = germanyImgRef.current;
+    if (equippedPlaneSkin === 'vermelho_plane' && vermelhoImgRef.current) {
+      activePlaneImg = vermelhoImgRef.current;
     }
 
     if (activePlaneImg) {
-      if (currentPlaneSkin?.color && equippedPlaneSkin !== 'germany_plane') {
+      if (currentPlaneSkin?.color && equippedPlaneSkin !== 'vermelho_plane') {
         // Apply color overlay to the plane image
         const offscreen = document.createElement('canvas');
         offscreen.width = PLANE_SIZE;
@@ -1129,41 +1147,18 @@ export default function App() {
     // Pilot (Always visible)
     ctx.save();
     ctx.scale(-1, 1);
-    if (equippedPilotSkin === 'default_pilot' && binImgRef.current) {
-      ctx.drawImage(binImgRef.current, -25, -25, 35, 35);
-    } else {
-      ctx.fillStyle = currentPilotSkin?.color || '#fdb';
-      ctx.beginPath();
-      ctx.arc(-17, -8, 10, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.strokeStyle = 'black';
-      ctx.lineWidth = 1;
-      ctx.stroke();
+    if (binImgRef.current) {
+      ctx.drawImage(binImgRef.current, -35, -35, 50, 50);
     }
     ctx.restore();
 
-    // Bigodinho Passenger (DLC ONLY or if equipped)
-    if (gameState.startsWith('DLC_') || equippedBigodaoSkin !== 'none_bigodao') {
+    // Bigodinho Passenger (DLC ONLY)
+    if (gameState.startsWith('DLC_')) {
       ctx.save();
       ctx.scale(-1, 1); // Flip back to draw him facing forward
       
-      if (equippedBigodaoSkin === 'default_bigodao' && bigodaoImgRef.current) {
-        ctx.drawImage(bigodaoImgRef.current, 0, -25, 35, 35);
-      } else if (equippedBigodaoSkin !== 'none_bigodao') {
-        ctx.fillStyle = currentBigodaoSkin?.color || '#fdb';
-        ctx.beginPath();
-        ctx.arc(17, -8, 14, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.strokeStyle = 'black';
-        ctx.lineWidth = 1;
-        ctx.stroke();
-        
-        // The Mustache
-        ctx.fillStyle = 'black';
-        ctx.fillRect(7, 0, 20, 3);
-      } else if (gameState.startsWith('DLC_') && bigodaoImgRef.current) {
-        // In DLC mode, if no skin is equipped, force default bigodao
-        ctx.drawImage(bigodaoImgRef.current, 0, -25, 35, 35);
+      if (bigodaoImgRef.current) {
+        ctx.drawImage(bigodaoImgRef.current, 5, -35, 50, 50);
       }
       ctx.restore();
     }
@@ -1225,7 +1220,7 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    const activeStates: GameState[] = ['PLAYING', 'FRENZY', 'BOSS_FIGHT', 'COUNTDOWN', 'DLC_GERMANY_RIDE', 'DLC_FRENZY_MODE', 'DLC_BOSS_FIGHT'];
+    const activeStates: GameState[] = ['PLAYING', 'FRENZY', 'BOSS_FIGHT', 'COUNTDOWN', 'DLC_VERMELHO_RIDE', 'DLC_FRENZY_MODE', 'DLC_BOSS_FIGHT'];
     if (activeStates.includes(gameState)) {
       frameRef.current = requestAnimationFrame(update);
       return () => cancelAnimationFrame(frameRef.current);
@@ -1233,24 +1228,8 @@ export default function App() {
   }, [gameState, update]);
 
   // --- Handlers ---
-  const buyEnergy = () => {
-    if (gems >= 10) {
-      setGems(g => g - 10);
-      setEnergy(10);
-      confetti({
-        particleCount: 50,
-        spread: 60,
-        origin: { y: 0.8 },
-        colors: ['#f97316']
-      });
-    } else {
-      alert("NOT ENOUGH GEMS! BUY MORE WITH YOUR CREDIT CARD!");
-      setShowOffer(true);
-    }
-  };
-
   const handleJump = () => {
-    const isDlcActive = gameState === 'DLC_GERMANY_RIDE' || gameState === 'DLC_FRENZY_MODE' || gameState === 'DLC_BOSS_FIGHT';
+    const isDlcActive = gameState === 'DLC_VERMELHO_RIDE' || gameState === 'DLC_FRENZY_MODE' || gameState === 'DLC_BOSS_FIGHT';
     if (gameState === 'PLAYING' || gameState === 'FRENZY' || gameState === 'BOSS_FIGHT' || isDlcActive) {
       const currentThrust = stats[0].value;
       const effectiveJump = JUMP_STRENGTH - (currentThrust - 10) * 0.1;
@@ -1262,12 +1241,7 @@ export default function App() {
         });
       }
     } else if (gameState === 'START') {
-      if (energy > 0) {
-        setEnergy(e => e - 1);
-        generateRealism();
-      } else {
-        alert("Out of Energy! Buy more for 10 Gems?");
-      }
+      generateRealism();
     }
   };
 
@@ -1384,9 +1358,9 @@ export default function App() {
       } else if (ccTarget?.name === 'Extra Lives (10x)') {
         setCcError("SUCCESS! EXTRA LIVES ADDED!");
         setGems(g => g + 300);
-      } else if (ccTarget?.name === 'Infinite Energy (24h)') {
-        setCcError("SUCCESS! INFINITE ENERGY ACTIVATED!");
-        setEnergy(9999);
+      } else if (ccTarget?.name === 'Skill Orb Pack (50x)') {
+        setCcError("SUCCESS! SKILL ORBS ADDED!");
+        setGems(g => g + 500);
       } else {
         setCcError("SUCCESS! FAKE CARD DETECTED.");
         setGems(g => g + 1000);
@@ -1549,14 +1523,6 @@ export default function App() {
               <Gem size={8} className="text-blue-400" />
               <span className="text-[9px] font-mono">{gems}</span>
             </div>
-            <button 
-              onClick={buyEnergy}
-              className="bg-black/50 px-1 py-0.5 rounded flex items-center gap-1 border border-white/10 hover:bg-orange-500/20 transition-colors group"
-            >
-              <Zap size={8} className="text-orange-400 group-hover:scale-125 transition-transform" />
-              <span className="text-[9px] font-mono">{energy}/10</span>
-              <span className="text-[7px] bg-orange-500 text-black px-0.5 rounded font-bold ml-1">+</span>
-            </button>
           </div>
         </div>
 
@@ -1876,7 +1842,7 @@ export default function App() {
                   </button>
                 </div>
                 <p className="text-center text-[10px] text-gray-500 font-bold uppercase animate-pulse">
-                  Find Blue Orbs in-game for Energy!
+                  Find Purple Orbs for Invincibility and Green Orbs for Skill Points!
                 </p>
               </div>
             </motion.div>
@@ -2044,16 +2010,16 @@ export default function App() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: [0, 1, 0] }}
                     transition={{ delay: 3, duration: 0.5 }}
-                    onAnimationComplete={() => setGameState('DLC_GERMANY_INTRO')}
+                    onAnimationComplete={() => setGameState('DLC_VERMELHO_INTRO')}
                   />
                 </svg>
               </div>
             </motion.div>
           )}
 
-          {gameState === 'DLC_GERMANY_INTRO' && (
+          {gameState === 'DLC_VERMELHO_INTRO' && (
             <motion.div 
-              key="dlc-germany-intro"
+              key="dlc-vermelho-intro"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -2086,7 +2052,7 @@ export default function App() {
                     transition={{ delay: 2, duration: 3 }}
                     onAnimationComplete={() => {
                       setDlcLevel(1);
-                      nextStateRef.current = 'DLC_GERMANY_RIDE';
+                      nextStateRef.current = 'DLC_VERMELHO_RIDE';
                       setCountdown(3);
                       setGameState('COUNTDOWN');
                     }}
@@ -2125,7 +2091,7 @@ export default function App() {
                       transition={{ duration: 3, ease: "linear" }}
                       onAnimationComplete={() => {
                         setTimeout(() => {
-                          nextStateRef.current = 'DLC_GERMANY_RIDE';
+                          nextStateRef.current = 'DLC_VERMELHO_RIDE';
                           setCountdown(3);
                           setGameState('COUNTDOWN');
                         }, 1000);
@@ -2166,7 +2132,7 @@ export default function App() {
                       transition={{ duration: 3, ease: "linear" }}
                       onAnimationComplete={() => {
                         setTimeout(() => {
-                          nextStateRef.current = 'DLC_GERMANY_RIDE';
+                          nextStateRef.current = 'DLC_VERMELHO_RIDE';
                           setCountdown(3);
                           setGameState('COUNTDOWN');
                         }, 1000);
@@ -2231,7 +2197,7 @@ export default function App() {
                       transition={{ duration: 3, ease: "linear" }}
                       onAnimationComplete={() => {
                         setTimeout(() => {
-                          nextStateRef.current = 'DLC_GERMANY_RIDE';
+                          nextStateRef.current = 'DLC_VERMELHO_RIDE';
                           setCountdown(3);
                           setGameState('COUNTDOWN');
                         }, 1000);
@@ -2663,8 +2629,8 @@ export default function App() {
                                 setSkillPoints(sp => sp + 30);
                               } else if (item?.name === 'God Mode (1 Game)') {
                                 setIsInvincible(true);
-                              } else if (item?.name === 'Infinite Energy (24h)') {
-                                setEnergy(9999);
+                              } else if (item?.name === 'Skill Orb Pack (50x)') {
+                                setGems(g => g + 500);
                               }
                             }
                             confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
@@ -2703,21 +2669,19 @@ export default function App() {
                 <button onClick={() => setShowSkins(false)} className="p-2 hover:bg-white/10 rounded-full"><X /></button>
               </div>
               <div className="p-4 overflow-y-auto flex flex-col gap-4">
-                {['PLANE', 'PILOT', 'BIGODAO'].map(type => (
+                {['PLANE'].map(type => (
                   <div key={type} className="flex flex-col gap-2">
                     <h3 className="text-[10px] font-black uppercase text-gray-500 tracking-widest">{type} SKINS</h3>
                     <div className="grid grid-cols-2 gap-2">
                       {SKINS.filter(s => s.type === type).map(skin => {
                         const isOwned = ownedSkins.includes(skin.id);
-                        const isEquipped = equippedPlaneSkin === skin.id || equippedPilotSkin === skin.id || equippedBigodaoSkin === skin.id;
+                        const isEquipped = equippedPlaneSkin === skin.id;
                         return (
                           <button 
                             key={skin.id}
                             onClick={() => {
                               if (isOwned) {
                                 if (type === 'PLANE') setEquippedPlaneSkin(skin.id);
-                                if (type === 'PILOT') setEquippedPilotSkin(skin.id);
-                                if (type === 'BIGODAO') setEquippedBigodaoSkin(skin.id);
                               } else if (skin.price) {
                                 const price = skin.price;
                                 if (skin.currency === 'COINS' && coins >= price) {
@@ -2741,17 +2705,8 @@ export default function App() {
                           >
                             <div className="w-12 h-12 flex items-center justify-center">
                               {type === 'PLANE' && (
-                                skin.id === 'germany_plane' ? <img src={germanyImgPath} className="w-10 h-10 object-contain" referrerPolicy="no-referrer" /> :
+                                skin.id === 'vermelho_plane' ? <img src={vermelhoImgPath} className="w-10 h-10 object-contain" referrerPolicy="no-referrer" /> :
                                 <Plane size={32} style={{ color: skin.color || 'white' }} />
-                              )}
-                              {type === 'PILOT' && (
-                                skin.id === 'default_pilot' ? <img src={binImgPath} className="w-10 h-10 object-contain" referrerPolicy="no-referrer" /> :
-                                <User size={32} className="text-blue-400" />
-                              )}
-                              {type === 'BIGODAO' && (
-                                skin.id === 'default_bigodao' ? <img src={bigodaoImgPath} className="w-10 h-10 object-contain" referrerPolicy="no-referrer" /> :
-                                skin.id === 'none_bigodao' ? <X size={32} className="text-gray-500" /> :
-                                <div className="text-2xl">👨‍🦰</div>
                               )}
                             </div>
                             <div className="flex flex-col items-center">
@@ -2858,7 +2813,7 @@ export default function App() {
               initial={{ y: 100, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 100, opacity: 0 }}
-              className="absolute bottom-20 left-0 w-full z-[1000] pointer-events-none flex flex-col items-center justify-center"
+              className="fixed bottom-4 left-0 w-full z-[1000] pointer-events-none flex flex-col items-center justify-center"
             >
               <div className="relative bg-black/80 px-8 py-4 rounded-full border-2 border-yellow-500 shadow-[0_0_30px_rgba(234,179,8,0.5)] flex flex-col items-center">
                 <h2 className="text-4xl font-black italic text-white uppercase tracking-tighter relative z-10 drop-shadow-lg">
@@ -3502,7 +3457,7 @@ export default function App() {
               <div className="flex-1 overflow-y-auto p-6">
                 <div className="mb-4 flex gap-2">
                   <button onClick={() => setMapTab('NORMAL')} className={cn("px-4 py-2 font-bold rounded-lg", mapTab === 'NORMAL' ? "bg-green-600 text-white" : "bg-gray-800 text-gray-400")}>NORMAL</button>
-                  {isDlcUnlocked && <button onClick={() => setMapTab('DLC')} className={cn("px-4 py-2 font-bold rounded-lg", mapTab === 'DLC' ? "bg-red-600 text-white" : "bg-gray-800 text-gray-400")}>DLC (GERMANY)</button>}
+                  {isDlcUnlocked && <button onClick={() => setMapTab('DLC')} className={cn("px-4 py-2 font-bold rounded-lg", mapTab === 'DLC' ? "bg-red-600 text-white" : "bg-gray-800 text-gray-400")}>DLC (VERMELHO)</button>}
                 </div>
                 <div className="grid grid-cols-5 sm:grid-cols-8 gap-2">
                   {Array.from({ length: 50 }).map((_, i) => {
@@ -3521,7 +3476,7 @@ export default function App() {
                             else if (levelNum === 30) setGameState('DLC_FRENZY_CUTSCENE');
                             else if (levelNum === 40) setGameState('DLC_LEVEL_40_CUTSCENE');
                             else if (levelNum === 50) { setGameState('DLC_BOSS_CUTSCENE'); setIsDlcBoss(true); }
-                            else setGameState('DLC_GERMANY_RIDE');
+                            else setGameState('DLC_VERMELHO_RIDE');
                             setBossHp(200);
                           } else {
                             setScore(levelNum);
