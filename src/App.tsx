@@ -29,13 +29,27 @@ import {
   Upload,
   Map,
   Lock,
+  Palette,
+  Sword,
+  Trash2,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { cn } from './lib/utils';
-import bgImgPath from './bg.png';
-import towerImgPath from './tower.png';
-import planeImgPath from './plane.png';
-import frankfurtImgPath from './frankfurt.png';
+import bgImg from './bg.png';
+import towerImg from './tower.png';
+import planeImg from './plane.png';
+import frankfurtImg from './frankfurt.png';
+import binImg from './bin.png';
+import bigodaoImg from './bigodao.png';
+import germanyImg from './planegermany.png';
+
+const bgImgPath = bgImg;
+const towerImgPath = towerImg;
+const planeImgPath = planeImg;
+const frankfurtImgPath = frankfurtImg;
+const binImgPath = binImg;
+const bigodaoImgPath = bigodaoImg;
+const germanyImgPath = germanyImg;
 
 // --- Constants ---
 const GRAVITY = 0.4;
@@ -43,13 +57,15 @@ const JUMP_STRENGTH = -7;
 const PIPE_SPEED = 4;
 const PIPE_SPAWN_RATE = 1800;
 const PIPE_WIDTH = 70;
-const PIPE_GAP = 200;
-const PLANE_SIZE = 70;
+const PIPE_GAP = 250;
+const PLANE_SIZE = 120;
 const CANVAS_WIDTH = 800;
 const CANVAS_HEIGHT = 600;
 
 // --- Types ---
 type GameState = 'START' | 'LOADING_REALISM' | 'PLAYING' | 'GAME_OVER' | 'VICTORY' | 'TRANSCENDENCE' | 'PENTAGON' | 'FRENZY_CUTSCENE' | 'FRENZY' | 'LIBERTY_CUTSCENE' | 'BOSS_CUTSCENE' | 'BOSS_FIGHT' | 'COUNTDOWN' | 'DLC_CLT_CUTSCENE' | 'DLC_GERMANY_INTRO' | 'DLC_GERMANY_RIDE' | 'DLC_BOSS_FIGHT' | 'DLC_LEVEL_11_CUTSCENE' | 'DLC_LEVEL_20_CUTSCENE' | 'DLC_LEVEL_40_CUTSCENE' | 'DLC_FRENZY_CUTSCENE' | 'DLC_FRENZY_MODE' | 'DLC_BOSS_CUTSCENE';
+
+type BPTier = 'STANDARD' | 'PLUS' | 'PRO';
 
 interface Stat {
   name: string;
@@ -69,7 +85,68 @@ interface Item {
   effect: string;
 }
 
+interface Skin {
+  id: string;
+  name: string;
+  type: 'PLANE' | 'PILOT' | 'BIGODAO';
+  color?: string;
+  rarity: 'COMMON' | 'RARE' | 'EPIC' | 'LEGENDARY' | 'MYTHIC';
+  price?: number;
+  currency?: 'COINS' | 'GEMS';
+}
+
+interface Weapon {
+  id: string;
+  name: string;
+  description: string;
+  cooldown: number;
+  rarity: 'COMMON' | 'RARE' | 'EPIC' | 'LEGENDARY' | 'MYTHIC';
+  price?: number;
+  currency?: 'COINS' | 'GEMS';
+}
+
+interface Mission {
+  id: string;
+  title: string;
+  description: string;
+  reward: number;
+  target: number;
+  type: 'SCORE' | 'LEVEL' | 'COINS' | 'GEMS' | 'TOWERS';
+}
+
 // --- Mock Data ---
+const SKINS: Skin[] = [
+  { id: 'default_plane', name: 'Classic Boeing', type: 'PLANE', rarity: 'COMMON' },
+  { id: 'red_plane', name: 'Crimson Flyer', type: 'PLANE', color: '#ef4444', rarity: 'RARE' },
+  { id: 'blue_plane', name: 'Azure Sky', type: 'PLANE', color: '#3b82f6', rarity: 'RARE' },
+  { id: 'gold_plane', name: 'Golden Wings', type: 'PLANE', color: '#eab308', rarity: 'LEGENDARY' },
+  { id: 'germany_plane', name: 'Germany', type: 'PLANE', rarity: 'LEGENDARY', price: 5000, currency: 'COINS' },
+  { id: 'default_pilot', name: 'Lixo de Lado', type: 'PILOT', rarity: 'COMMON' },
+  { id: 'cool_pilot', name: 'Ace Pilot', type: 'PILOT', color: '#3b82f6', rarity: 'EPIC' },
+  { id: 'none_bigodao', name: 'No Passenger', type: 'BIGODAO', rarity: 'COMMON' },
+  { id: 'default_bigodao', name: 'Bigodão', type: 'BIGODAO', rarity: 'COMMON' },
+  { id: 'gold_bigodao', name: 'Golden Bigodão', type: 'BIGODAO', color: '#eab308', rarity: 'LEGENDARY' },
+];
+
+const WEAPONS: Weapon[] = [
+  { id: 'none', name: 'No Weapon', description: 'Peaceful flight', cooldown: 0, rarity: 'COMMON', price: 0 },
+  { id: 'missile', name: 'Tower Buster', description: 'Deletes the next tower', cooldown: 5000, rarity: 'EPIC', price: 500, currency: 'COINS' },
+  { id: 'nuke', name: 'The Eraser', description: 'Clears all towers on screen', cooldown: 15000, rarity: 'LEGENDARY', price: 100, currency: 'GEMS' },
+  { id: 'laser', name: 'Precision Beam', description: 'Instantly destroys the next 2 towers', cooldown: 8000, rarity: 'EPIC', price: 1000, currency: 'COINS' },
+  { id: 'shield_burst', name: 'Shield Burst', description: 'Invincibility for 3 seconds', cooldown: 20000, rarity: 'LEGENDARY', price: 200, currency: 'GEMS' },
+  { id: 'coin_magnet', name: 'Coin Magnet', description: 'Attracts all coins for 10s', cooldown: 30000, rarity: 'RARE', price: 300, currency: 'COINS' },
+  { id: 'gem_finder', name: 'Gem Finder', description: 'Next collectible is guaranteed Gem', cooldown: 60000, rarity: 'EPIC', price: 500, currency: 'GEMS' },
+  { id: 'time_warp', name: 'Time Warp', description: 'Slows time for 15 seconds', cooldown: 45000, rarity: 'LEGENDARY', price: 1000, currency: 'GEMS' },
+  { id: 'double_xp', name: 'XP Overdrive', description: 'Double XP for the rest of the game', cooldown: 120000, rarity: 'EPIC', price: 2000, currency: 'COINS' },
+  { id: 'slop_bomb', name: 'Slop Bomb', description: 'Turns all towers into coins', cooldown: 25000, rarity: 'MYTHIC', price: 5000, currency: 'GEMS' },
+];
+
+const REDEEM_CODES: Record<string, { reward: string, type: 'GEMS' | 'COINS' | 'SKIN', value: any }> = {
+  'SLOP2024': { reward: '500 Coins', type: 'COINS', value: 500 },
+  'SKYHIGH': { reward: '50 Gems', type: 'GEMS', value: 50 },
+  'GOLDEN': { reward: 'Golden Wings Skin', type: 'SKIN', value: 'gold_plane' },
+};
+
 const ITEMS: Item[] = [
   { id: '1', name: 'God Mode (1 Game)', rarity: 'MYTHIC', price: 4.99, currency: 'USD', effect: 'Infinite HP' },
   { id: '2', name: 'Nuke Pack (5x)', rarity: 'EPIC', price: 1.99, currency: 'USD', effect: 'Clear Screen' },
@@ -79,10 +156,37 @@ const ITEMS: Item[] = [
   { id: '6', name: 'Skill Boost (25 SP)', rarity: 'LEGENDARY', price: 49.99, currency: 'USD', effect: '+25 Skill Points' },
 ];
 
-const ACHIEVEMENTS = [
-  { id: '1', title: 'First Flight', description: 'Pass 1 tower', reward: 10 },
-  { id: '2', title: 'Frequent Flyer', description: 'Pass 10 towers', reward: 50 },
-  { id: '3', title: 'Sky God', description: 'Reach Level 10', reward: 100 },
+const ACHIEVEMENTS: Mission[] = [
+  { id: '1', title: 'First Flight', description: 'Pass 1 tower', reward: 10, target: 1, type: 'TOWERS' },
+  { id: '2', title: 'Frequent Flyer', description: 'Pass 10 towers', reward: 20, target: 10, type: 'TOWERS' },
+  { id: '3', title: 'Sky Master', description: 'Pass 50 towers', reward: 100, target: 50, type: 'TOWERS' },
+  { id: '4', title: 'Coin Collector', description: 'Collect 100 coins', reward: 30, target: 100, type: 'COINS' },
+  { id: '5', title: 'Gem Miner', description: 'Collect 10 gems', reward: 50, target: 10, type: 'GEMS' },
+  { id: '6', title: 'Level Up!', description: 'Reach Level 5', reward: 40, target: 5, type: 'LEVEL' },
+  { id: '7', title: 'Elite Pilot', description: 'Reach Level 20', reward: 200, target: 20, type: 'LEVEL' },
+  { id: '8', title: 'Tower Destroyer', description: 'Pass 100 towers total', reward: 150, target: 100, type: 'TOWERS' },
+  { id: '9', title: 'Rich Captain', description: 'Collect 1000 coins', reward: 100, target: 1000, type: 'COINS' },
+  { id: '10', title: 'Gem Tycoon', description: 'Collect 100 gems', reward: 500, target: 100, type: 'GEMS' },
+  { id: '11', title: 'Marathon', description: 'Score 1000 points', reward: 300, target: 1000, type: 'SCORE' },
+  { id: '12', title: 'Sprint', description: 'Score 100 points', reward: 50, target: 100, type: 'SCORE' },
+  { id: '13', title: 'Tower Hater', description: 'Pass 200 towers', reward: 400, target: 200, type: 'TOWERS' },
+  { id: '14', title: 'Level Pro', description: 'Reach Level 40', reward: 1000, target: 40, type: 'LEVEL' },
+  { id: '15', title: 'Coin King', description: 'Collect 5000 coins', reward: 500, target: 5000, type: 'COINS' },
+  { id: '16', title: 'Gem God', description: 'Collect 500 gems', reward: 2000, target: 500, type: 'GEMS' },
+  { id: '17', title: 'Sky Legend', description: 'Score 5000 points', reward: 1500, target: 5000, type: 'SCORE' },
+  { id: '18', title: 'Tower Slayer', description: 'Pass 500 towers', reward: 2000, target: 500, type: 'TOWERS' },
+  { id: '19', title: 'Level Deity', description: 'Reach Level 100', reward: 5000, target: 100, type: 'LEVEL' },
+  { id: '20', title: 'Billionaire', description: 'Collect 10000 coins', reward: 1000, target: 10000, type: 'COINS' },
+  { id: '21', title: 'Gem Emperor', description: 'Collect 1000 gems', reward: 5000, target: 1000, type: 'GEMS' },
+  { id: '22', title: 'Infinite Flight', description: 'Score 10000 points', reward: 3000, target: 10000, type: 'SCORE' },
+  { id: '23', title: 'Tower Annihilator', description: 'Pass 1000 towers', reward: 5000, target: 1000, type: 'TOWERS' },
+  { id: '24', title: 'Level Transcendent', description: 'Reach Level 200', reward: 10000, target: 200, type: 'LEVEL' },
+  { id: '25', title: 'Coin Galaxy', description: 'Collect 50000 coins', reward: 5000, target: 50000, type: 'COINS' },
+  { id: '26', title: 'Gem Universe', description: 'Collect 5000 gems', reward: 10000, target: 5000, type: 'GEMS' },
+  { id: '27', title: 'Sky God', description: 'Score 50000 points', reward: 10000, target: 50000, type: 'SCORE' },
+  { id: '28', title: 'Tower God', description: 'Pass 5000 towers', reward: 20000, target: 5000, type: 'TOWERS' },
+  { id: '29', title: 'Level Immortal', description: 'Reach Level 500', reward: 50000, target: 500, type: 'LEVEL' },
+  { id: '30', title: 'Slop Master', description: 'Collect 100000 coins', reward: 10000, target: 100000, type: 'COINS' },
 ];
 
 const ARTIFACTS = [
@@ -93,12 +197,46 @@ const ARTIFACTS = [
 ];
 
 const BP_REWARDS = [
-  { level: 1, reward: '100 Coins', type: 'COINS', value: 100 },
-  { level: 5, reward: '10 Gems', type: 'GEMS', value: 10 },
-  { level: 10, reward: 'Rare Skin', type: 'SKIN', value: 'Rare Plane' },
-  { level: 15, reward: '500 Coins', type: 'COINS', value: 500 },
-  { level: 20, reward: '50 Gems', type: 'GEMS', value: 50 },
-  { level: 30, reward: 'Legendary Artifact', type: 'ARTIFACT', value: '3' },
+  // Level 5
+  { level: 5, reward: '500 Coins', type: 'COINS', value: 500, tier: 'STANDARD' },
+  { level: 5, reward: '10 Gems', type: 'GEMS', value: 10, tier: 'PLUS' },
+  { level: 5, reward: 'Red Flyer Skin', type: 'SKIN', value: 'red_plane', tier: 'PRO' },
+  // Level 10
+  { level: 10, reward: '1000 Coins', type: 'COINS', value: 1000, tier: 'STANDARD' },
+  { level: 10, reward: '25 Gems', type: 'GEMS', value: 25, tier: 'PLUS' },
+  { level: 10, reward: 'Blue Sky Skin', type: 'SKIN', value: 'blue_plane', tier: 'PRO' },
+  // Level 15
+  { level: 15, reward: '1500 Coins', type: 'COINS', value: 1500, tier: 'STANDARD' },
+  { level: 15, reward: '50 Gems', type: 'GEMS', value: 50, tier: 'PLUS' },
+  { level: 15, reward: 'Ace Pilot Skin', type: 'SKIN', value: 'cool_pilot', tier: 'PRO' },
+  // Level 20
+  { level: 20, reward: '2000 Coins', type: 'COINS', value: 2000, tier: 'STANDARD' },
+  { level: 20, reward: '100 Gems', type: 'GEMS', value: 100, tier: 'PLUS' },
+  { level: 20, reward: 'Golden Wings Skin', type: 'SKIN', value: 'gold_plane', tier: 'PRO' },
+  // Level 25
+  { level: 25, reward: '3000 Coins', type: 'COINS', value: 3000, tier: 'STANDARD' },
+  { level: 25, reward: '150 Gems', type: 'GEMS', value: 150, tier: 'PLUS' },
+  { level: 25, reward: 'Golden Bigodão', type: 'SKIN', value: 'gold_bigodao', tier: 'PRO' },
+  // Level 30
+  { level: 30, reward: '5000 Coins', type: 'COINS', value: 5000, tier: 'STANDARD' },
+  { level: 30, reward: '200 Gems', type: 'GEMS', value: 200, tier: 'PLUS' },
+  { level: 30, reward: 'Mythic Artifact', type: 'ARTIFACT', value: '1', tier: 'PRO' },
+  // Level 35
+  { level: 35, reward: '7500 Coins', type: 'COINS', value: 7500, tier: 'STANDARD' },
+  { level: 35, reward: '300 Gems', type: 'GEMS', value: 300, tier: 'PLUS' },
+  { level: 35, reward: 'Secret Weapon', type: 'WEAPON', value: 'slop_bomb', tier: 'PRO' },
+  // Level 40
+  { level: 40, reward: '10000 Coins', type: 'COINS', value: 10000, tier: 'STANDARD' },
+  { level: 40, reward: '500 Gems', type: 'GEMS', value: 500, tier: 'PLUS' },
+  { level: 40, reward: 'God Mode Item', type: 'ITEM', value: '1', tier: 'PRO' },
+  // Level 45
+  { level: 45, reward: '15000 Coins', type: 'COINS', value: 15000, tier: 'STANDARD' },
+  { level: 45, reward: '750 Gems', type: 'GEMS', value: 750, tier: 'PLUS' },
+  { level: 45, reward: 'Infinite Energy', type: 'ITEM', value: '4', tier: 'PRO' },
+  // Level 50
+  { level: 50, reward: '25000 Coins', type: 'COINS', value: 25000, tier: 'STANDARD' },
+  { level: 50, reward: '1000 Gems', type: 'GEMS', value: 1000, tier: 'PLUS' },
+  { level: 50, reward: 'ULTRA VALUE PACK', type: 'ITEM', value: '5', tier: 'PRO' },
 ];
 
 export default function App() {
@@ -121,6 +259,9 @@ export default function App() {
   const frankfurtImgRef = useRef<HTMLImageElement | null>(null);
   const towerImgRef = useRef<HTMLImageElement | null>(null);
   const planeImgRef = useRef<HTMLImageElement | null>(null);
+  const binImgRef = useRef<HTMLImageElement | null>(null);
+  const bigodaoImgRef = useRef<HTMLImageElement | null>(null);
+  const germanyImgRef = useRef<HTMLImageElement | null>(null);
 
   // --- RPG / Meta State ---
   const [level, setLevel] = useState(1);
@@ -143,7 +284,17 @@ export default function App() {
   const [claimedAchievements, setClaimedAchievements] = useState<string[]>([]);
   const [artifacts, setArtifacts] = useState<string[]>([]);
   const [battlePassXp, setBattlePassXp] = useState(0);
-  const [claimedBpRewards, setClaimedBpRewards] = useState<number[]>([]);
+  const [bpTier, setBpTier] = useState<BPTier>('STANDARD');
+  const [ownedBpTiers, setOwnedBpTiers] = useState<BPTier[]>(['STANDARD']);
+  const [ownedSkins, setOwnedSkins] = useState<string[]>(['default_plane', 'default_pilot', 'none_bigodao', 'default_bigodao']);
+  const [equippedPlaneSkin, setEquippedPlaneSkin] = useState('default_plane');
+  const [equippedPilotSkin, setEquippedPilotSkin] = useState('default_pilot');
+  const [equippedBigodaoSkin, setEquippedBigodaoSkin] = useState('none_bigodao');
+  const [ownedWeapons, setOwnedWeapons] = useState<string[]>(['none']);
+  const [equippedWeapon, setEquippedWeapon] = useState('none');
+  const [redeemedCodes, setRedeemedCodes] = useState<string[]>([]);
+  const [weaponCooldown, setWeaponCooldown] = useState(0);
+  const [claimedBpRewards, setClaimedBpRewards] = useState<string[]>([]);
   const [countdown, setCountdown] = useState(0);
   const [bossHp, setBossHp] = useState(100);
   const [bossX, setBossX] = useState(CANVAS_WIDTH + 100);
@@ -157,6 +308,7 @@ export default function App() {
   const previousGameStateRef = useRef<GameState>('PLAYING');
   const collectiblesRef = useRef<{ x: number; y: number; type: 'ENERGY' | 'COIN' | 'GEM'; id: number }[]>([]);
   const lastCollectibleSpawnRef = useRef<number>(0);
+  const lastWeaponUseRef = useRef<number>(0);
 
   // --- Persistence ---
   useEffect(() => {
@@ -174,6 +326,15 @@ export default function App() {
         if (data.artifacts !== undefined) setArtifacts(data.artifacts);
         if (data.claimedAchievements !== undefined) setClaimedAchievements(data.claimedAchievements);
         if (data.battlePassXp !== undefined) setBattlePassXp(data.battlePassXp);
+        if (data.bpTier !== undefined) setBpTier(data.bpTier);
+        if (data.ownedBpTiers !== undefined) setOwnedBpTiers(data.ownedBpTiers);
+        if (data.ownedSkins !== undefined) setOwnedSkins(data.ownedSkins);
+        if (data.equippedPlaneSkin !== undefined) setEquippedPlaneSkin(data.equippedPlaneSkin);
+        if (data.equippedPilotSkin !== undefined) setEquippedPilotSkin(data.equippedPilotSkin);
+        if (data.equippedBigodaoSkin !== undefined) setEquippedBigodaoSkin(data.equippedBigodaoSkin);
+        if (data.ownedWeapons !== undefined) setOwnedWeapons(data.ownedWeapons);
+        if (data.equippedWeapon !== undefined) setEquippedWeapon(data.equippedWeapon);
+        if (data.redeemedCodes !== undefined) setRedeemedCodes(data.redeemedCodes);
         if (data.claimedBpRewards !== undefined) setClaimedBpRewards(data.claimedBpRewards);
         if (data.isDlcUnlocked !== undefined) setIsDlcUnlocked(data.isDlcUnlocked);
       } catch (e) {
@@ -194,6 +355,15 @@ export default function App() {
       artifacts,
       claimedAchievements,
       battlePassXp,
+      bpTier,
+      ownedBpTiers,
+      ownedSkins,
+      equippedPlaneSkin,
+      equippedPilotSkin,
+      equippedBigodaoSkin,
+      ownedWeapons,
+      equippedWeapon,
+      redeemedCodes,
       claimedBpRewards,
       isDlcUnlocked
     };
@@ -201,39 +371,72 @@ export default function App() {
   }, [highScore, dlcHighScore, level, xp, coins, gems, energy, artifacts, claimedAchievements, battlePassXp, claimedBpRewards, isDlcUnlocked]);
 
   const scanImage = (img: HTMLImageElement) => {
+    if (!img || img.width === 0 || img.height === 0) {
+      return { x: 0, y: 0, w: 0, h: 0 };
+    }
     const canvas = document.createElement('canvas');
     canvas.width = img.width;
     canvas.height = img.height;
     const ctx = canvas.getContext('2d');
     if (!ctx) return { x: 0, y: 0, w: img.width, h: img.height };
     ctx.drawImage(img, 0, 0);
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const data = imageData.data;
-    
-    let minX = canvas.width, minY = canvas.height, maxX = 0, maxY = 0;
-    let found = false;
+    try {
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = imageData.data;
+      
+      let minX = canvas.width, minY = canvas.height, maxX = 0, maxY = 0;
+      let found = false;
 
-    for (let y = 0; y < canvas.height; y++) {
-      for (let x = 0; x < canvas.width; x++) {
-        const alpha = data[(y * canvas.width + x) * 4 + 3];
-        const r = data[(y * canvas.width + x) * 4];
-        const g = data[(y * canvas.width + x) * 4 + 1];
-        const b = data[(y * canvas.width + x) * 4 + 2];
-        
-        // Consider non-transparent and non-white as content
-        if (alpha > 10 && (r < 250 || g < 250 || b < 250)) {
-          if (x < minX) minX = x;
-          if (y < minY) minY = y;
-          if (x > maxX) maxX = x;
-          if (y > maxY) maxY = y;
-          found = true;
+      for (let y = 0; y < canvas.height; y++) {
+        for (let x = 0; x < canvas.width; x++) {
+          const alpha = data[(y * canvas.width + x) * 4 + 3];
+          const r = data[(y * canvas.width + x) * 4];
+          const g = data[(y * canvas.width + x) * 4 + 1];
+          const b = data[(y * canvas.width + x) * 4 + 2];
+          
+          // Consider non-transparent and non-white as content
+          if (alpha > 10 && (r < 250 || g < 250 || b < 250)) {
+            if (x < minX) minX = x;
+            if (y < minY) minY = y;
+            if (x > maxX) maxX = x;
+            if (y > maxY) maxY = y;
+            found = true;
+          }
         }
       }
-    }
 
-    if (!found) return { x: 0, y: 0, w: img.width, h: img.height };
-    return { x: minX, y: minY, w: maxX - minX, h: maxY - minY };
+      if (!found) return { x: 0, y: 0, w: img.width, h: img.height };
+      return { x: minX, y: minY, w: maxX - minX, h: maxY - minY };
+    } catch (e) {
+      console.warn("Failed to scan image data", e);
+      return { x: 0, y: 0, w: img.width, h: img.height };
+    }
   };
+
+  const loadImg = useCallback((path: string | null) => new Promise<HTMLImageElement | null>((resolve) => {
+    if (!path) {
+      resolve(null);
+      return;
+    }
+    const img = new Image();
+    // Only use crossOrigin for external URLs
+    if (path.startsWith('http') || path.startsWith('data:')) {
+      img.crossOrigin = "anonymous";
+    }
+    img.src = path;
+    img.onload = () => {
+      if (img.width === 0 || img.height === 0) {
+        console.warn(`Image loaded but has 0 dimensions: ${path}`);
+        resolve(null);
+      } else {
+        resolve(img);
+      }
+    };
+    img.onerror = (e) => {
+      console.warn(`Failed to load image: ${path}`, e);
+      resolve(null);
+    };
+  }), []);
 
   const [stats, setStats] = useState<Stat[]>([
     { name: 'Thrust', value: 10, max: 100, icon: <Zap size={12} />, color: 'text-yellow-400', bgColor: 'bg-yellow-400' },
@@ -260,6 +463,8 @@ export default function App() {
   const [skipTarget, setSkipTarget] = useState<number>(11);
   const [showSettings, setShowSettings] = useState(false);
   const [showWorldMap, setShowWorldMap] = useState(false);
+  const [showSkins, setShowSkins] = useState(false);
+  const [showWeapons, setShowWeapons] = useState(false);
   const [mapTab, setMapTab] = useState<'NORMAL' | 'DLC'>('NORMAL');
   const [useAiRealism, setUseAiRealism] = useState(() => {
     const saved = localStorage.getItem('aviation_use_ai');
@@ -279,54 +484,16 @@ export default function App() {
 
   // --- Image Generation ---
   const generateRealism = async (force = false, retryCount = 0) => {
-    if (!force) {
-      const cached = localStorage.getItem('aviation_realism_assets');
-      if (cached) {
-        try {
-          const { bg, tower, plane } = JSON.parse(cached);
-          const loadImg = (data: string) => new Promise<HTMLImageElement>((resolve, reject) => {
-            const img = new Image();
-            img.src = data;
-            img.onload = () => resolve(img);
-            img.onerror = reject;
-          });
-          
-          const [bgImg, towerImg, planeImg] = await Promise.all([
-            loadImg(bg),
-            loadImg(tower),
-            loadImg(plane)
-          ]);
-          
-          bgImgRef.current = bgImg;
-          towerImgRef.current = towerImg;
-          planeImgRef.current = planeImg;
-          
-          towerBoundsRef.current = scanImage(towerImg);
-          planeBoundsRef.current = scanImage(planeImg);
-          
-          startGame();
-          return;
-        } catch (e) {
-          console.error("Failed to load cached assets", e);
-          localStorage.removeItem('aviation_realism_assets');
-        }
-      }
-    }
-
     if (!useAiRealism) {
       try {
-        const loadImg = (path: string) => new Promise<HTMLImageElement>((resolve, reject) => {
-          const img = new Image();
-          img.src = path;
-          img.onload = () => resolve(img);
-          img.onerror = reject;
-        });
-        
-        const [bgImg, towerImg, planeImg, frankfurtImg] = await Promise.all([
-          loadImg(bgImgPath).catch(() => null),
-          loadImg(towerImgPath).catch(() => null),
-          loadImg(planeImgPath).catch(() => null),
-          loadImg(frankfurtImgPath).catch(() => null)
+        const [bgImg, towerImg, planeImg, frankfurtImg, binImg, bigodaoImg, germanyImg] = await Promise.all([
+          loadImg(bgImgPath),
+          loadImg(towerImgPath),
+          loadImg(planeImgPath),
+          loadImg(frankfurtImgPath),
+          loadImg(binImgPath),
+          loadImg(bigodaoImgPath),
+          loadImg(germanyImgPath)
         ]);
         
         if (bgImg) bgImgRef.current = bgImg;
@@ -344,11 +511,45 @@ export default function App() {
           planeImgRef.current = planeImg;
           planeBoundsRef.current = scanImage(planeImg);
         }
+        if (binImg) binImgRef.current = binImg;
+        if (bigodaoImg) bigodaoImgRef.current = bigodaoImg;
+        if (germanyImg) germanyImgRef.current = germanyImg;
       } catch (e) {
         console.log("No local assets found in ./images/, using placeholders.");
       }
       startGame();
       return;
+    }
+
+    if (!force) {
+      const cached = localStorage.getItem('aviation_realism_assets');
+      if (cached) {
+        try {
+          const { bg, tower, plane } = JSON.parse(cached);
+          
+          const [bgImg, towerImg, planeImg] = await Promise.all([
+            loadImg(bg),
+            loadImg(tower),
+            loadImg(plane)
+          ]);
+          
+          if (bgImg) bgImgRef.current = bgImg;
+          if (towerImg) {
+            towerImgRef.current = towerImg;
+            towerBoundsRef.current = scanImage(towerImg);
+          }
+          if (planeImg) {
+            planeImgRef.current = planeImg;
+            planeBoundsRef.current = scanImage(planeImg);
+          }
+          
+          startGame();
+          return;
+        } catch (e) {
+          console.error("Failed to load cached assets", e);
+          localStorage.removeItem('aviation_realism_assets');
+        }
+      }
     }
 
     setGameState('LOADING_REALISM');
@@ -394,24 +595,21 @@ export default function App() {
       const towerData = getBase64(towerRes);
       const planeData = getBase64(planeRes);
 
-      const loadImg = (data: string) => new Promise<HTMLImageElement>((resolve, reject) => {
-        const img = new Image();
-        img.src = data;
-        img.onload = () => resolve(img);
-        img.onerror = reject;
-      });
-
       if (bgData) bgImgRef.current = await loadImg(bgData);
       if (towerData) {
         const img = await loadImg(towerData);
-        towerImgRef.current = img;
-        towerBoundsRef.current = scanImage(img);
+        if (img) {
+          towerImgRef.current = img;
+          towerBoundsRef.current = scanImage(img);
+        }
       }
       if (planeData) {
         setPlaneBase64(planeData);
         const img = await loadImg(planeData);
-        planeImgRef.current = img;
-        planeBoundsRef.current = scanImage(img);
+        if (img) {
+          planeImgRef.current = img;
+          planeBoundsRef.current = scanImage(img);
+        }
       }
 
       if (bgData && towerData && planeData) {
@@ -487,7 +685,7 @@ export default function App() {
         if (time - lastSpawnRef.current > effectiveSpawnRate) {
           pipesRef.current.push({
             x: CANVAS_WIDTH,
-            topHeight: Math.random() * 300 + 50,
+            topHeight: Math.random() * (CANVAS_HEIGHT - PIPE_GAP - 100) + 50,
             id: Date.now(),
             scored: false
           });
@@ -888,11 +1086,38 @@ export default function App() {
       ctx.globalAlpha = 0.5;
     }
 
-    if (planeImgRef.current) {
-      ctx.drawImage(planeImgRef.current, -PLANE_SIZE/2, -PLANE_SIZE/2, PLANE_SIZE, PLANE_SIZE);
+    const currentPlaneSkin = SKINS.find(s => s.id === equippedPlaneSkin);
+    const currentPilotSkin = SKINS.find(s => s.id === equippedPilotSkin);
+    const currentBigodaoSkin = SKINS.find(s => s.id === equippedBigodaoSkin);
+
+    let activePlaneImg = planeImgRef.current;
+    if (equippedPlaneSkin === 'germany_plane' && germanyImgRef.current) {
+      activePlaneImg = germanyImgRef.current;
+    }
+
+    if (activePlaneImg) {
+      if (currentPlaneSkin?.color && equippedPlaneSkin !== 'germany_plane') {
+        // Apply color overlay to the plane image
+        const offscreen = document.createElement('canvas');
+        offscreen.width = PLANE_SIZE;
+        offscreen.height = PLANE_SIZE;
+        const octx = offscreen.getContext('2d');
+        if (octx) {
+          octx.drawImage(activePlaneImg, 0, 0, PLANE_SIZE, PLANE_SIZE);
+          octx.globalCompositeOperation = 'source-atop';
+          octx.fillStyle = currentPlaneSkin.color;
+          octx.globalAlpha = 0.5;
+          octx.fillRect(0, 0, PLANE_SIZE, PLANE_SIZE);
+          ctx.drawImage(offscreen, -PLANE_SIZE/2, -PLANE_SIZE/2, PLANE_SIZE, PLANE_SIZE);
+        } else {
+          ctx.drawImage(activePlaneImg, -PLANE_SIZE/2, -PLANE_SIZE/2, PLANE_SIZE, PLANE_SIZE);
+        }
+      } else {
+        ctx.drawImage(activePlaneImg, -PLANE_SIZE/2, -PLANE_SIZE/2, PLANE_SIZE, PLANE_SIZE);
+      }
     } else {
       // Simple Plane Shape
-      ctx.fillStyle = 'white';
+      ctx.fillStyle = currentPlaneSkin?.color || 'white';
       ctx.beginPath();
       ctx.ellipse(0, 0, PLANE_SIZE/2, PLANE_SIZE/4, 0, 0, Math.PI * 2);
       ctx.fill();
@@ -901,21 +1126,45 @@ export default function App() {
       ctx.fillRect(PLANE_SIZE/4, -PLANE_SIZE/3, PLANE_SIZE/10, PLANE_SIZE/1.5);
     }
 
-    // Bigodinho Passenger (DLC ONLY)
-    if (gameState.startsWith('DLC_')) {
-      ctx.save();
-      ctx.scale(-1, 1); // Flip back to draw him facing forward
-      ctx.fillStyle = '#fdb';
+    // Pilot (Always visible)
+    ctx.save();
+    ctx.scale(-1, 1);
+    if (equippedPilotSkin === 'default_pilot' && binImgRef.current) {
+      ctx.drawImage(binImgRef.current, -25, -25, 35, 35);
+    } else {
+      ctx.fillStyle = currentPilotSkin?.color || '#fdb';
       ctx.beginPath();
-      ctx.arc(0, -15, 10, 0, Math.PI * 2);
+      ctx.arc(-17, -8, 10, 0, Math.PI * 2);
       ctx.fill();
       ctx.strokeStyle = 'black';
       ctx.lineWidth = 1;
       ctx.stroke();
+    }
+    ctx.restore();
+
+    // Bigodinho Passenger (DLC ONLY or if equipped)
+    if (gameState.startsWith('DLC_') || equippedBigodaoSkin !== 'none_bigodao') {
+      ctx.save();
+      ctx.scale(-1, 1); // Flip back to draw him facing forward
       
-      // The Mustache
-      ctx.fillStyle = 'black';
-      ctx.fillRect(-6, -10, 12, 3);
+      if (equippedBigodaoSkin === 'default_bigodao' && bigodaoImgRef.current) {
+        ctx.drawImage(bigodaoImgRef.current, 0, -25, 35, 35);
+      } else if (equippedBigodaoSkin !== 'none_bigodao') {
+        ctx.fillStyle = currentBigodaoSkin?.color || '#fdb';
+        ctx.beginPath();
+        ctx.arc(17, -8, 14, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = 'black';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        
+        // The Mustache
+        ctx.fillStyle = 'black';
+        ctx.fillRect(7, 0, 20, 3);
+      } else if (gameState.startsWith('DLC_') && bigodaoImgRef.current) {
+        // In DLC mode, if no skin is equipped, force default bigodao
+        ctx.drawImage(bigodaoImgRef.current, 0, -25, 35, 35);
+      }
       ctx.restore();
     }
     
@@ -946,18 +1195,11 @@ export default function App() {
     // Load local assets on mount so they are ready for DLC even if normal game hasn't started
     const loadLocalAssets = async () => {
       try {
-        const loadImg = (path: string) => new Promise<HTMLImageElement>((resolve, reject) => {
-          const img = new Image();
-          img.src = path;
-          img.onload = () => resolve(img);
-          img.onerror = reject;
-        });
-        
         const [bgImg, towerImg, planeImg, frankfurtImg] = await Promise.all([
-          loadImg(bgImgPath).catch(() => null),
-          loadImg(towerImgPath).catch(() => null),
-          loadImg(planeImgPath).catch(() => null),
-          loadImg(frankfurtImgPath).catch(() => null)
+          loadImg(bgImgPath),
+          loadImg(towerImgPath),
+          loadImg(planeImgPath),
+          loadImg(frankfurtImgPath)
         ]);
         
         if (bgImg) bgImgRef.current = bgImg;
@@ -1041,6 +1283,48 @@ export default function App() {
         colors: ['#3b82f6', '#fbbf24']
       });
     }
+  };
+
+  const handleWeapon = () => {
+    if (equippedWeapon === 'none') return;
+    const now = performance.now();
+    const weapon = WEAPONS.find(w => w.id === equippedWeapon);
+    if (!weapon) return;
+
+    if (now - lastWeaponUseRef.current < weapon.cooldown) return;
+
+    if (equippedWeapon === 'missile') {
+      // Delete the closest tower in front
+      const closestPipe = pipesRef.current.find(p => p.x > 100);
+      if (closestPipe) {
+        pipesRef.current = pipesRef.current.filter(p => p.id !== closestPipe.id);
+        confetti({ particleCount: 50, spread: 60, origin: { x: 0.5, y: 0.5 } });
+      }
+    } else if (equippedWeapon === 'nuke') {
+      // Clear all pipes on screen
+      pipesRef.current = [];
+      confetti({ particleCount: 150, spread: 100, origin: { x: 0.5, y: 0.5 } });
+    } else if (equippedWeapon === 'laser') {
+      // Destroy next 2 pipes
+      const toDestroy = pipesRef.current.filter(p => p.x > 100).slice(0, 2).map(p => p.id);
+      pipesRef.current = pipesRef.current.filter(p => !toDestroy.includes(p.id));
+      confetti({ particleCount: 80, spread: 80, origin: { x: 0.5, y: 0.5 } });
+    } else if (equippedWeapon === 'shield_burst') {
+      setIsInvincible(true);
+      setTimeout(() => setIsInvincible(false), 3000);
+      confetti({ particleCount: 40, spread: 40, colors: ['#3b82f6'] });
+    } else if (equippedWeapon === 'time_warp') {
+      setSlowMo(true);
+      setTimeout(() => setSlowMo(false), 15000);
+    } else if (equippedWeapon === 'slop_bomb') {
+      // Turn all pipes into coins? (Simplified: just clear and give coins)
+      const count = pipesRef.current.length;
+      pipesRef.current = [];
+      setCoins(c => c + count * 50);
+      confetti({ particleCount: 200, spread: 120, colors: ['#fbbf24'] });
+    }
+
+    lastWeaponUseRef.current = now;
   };
 
   const startGame = () => {
@@ -1595,27 +1879,24 @@ export default function App() {
                   Find Blue Orbs in-game for Energy!
                 </p>
               </div>
-
-              <div className="grid grid-cols-2 gap-4 w-full">
-                <button onClick={() => setShowStats(true)} className="bg-gray-800 hover:bg-gray-700 p-3 rounded-xl flex items-center justify-center gap-2 border border-white/5">
-                  <Dna size={18} className="text-purple-400" />
-                  <span className="font-bold text-xs">SKILLS</span>
-                </button>
-                <motion.button 
-                  onClick={() => setShowShop(true)} 
-                  animate={{ x: [0, -2, 2, -2, 2, 0], y: [0, -2, 2, -2, 2, 0] }}
-                  transition={{ repeat: Infinity, duration: 0.00000000000001 }}
-                  className="bg-gray-800 hover:bg-gray-700 p-3 rounded-xl flex items-center justify-center gap-2 border border-white/5"
-                >
-                  <ShoppingBag size={18} className="text-yellow-400" />
-                  <span className="font-bold text-xs">SHOP</span>
-                </motion.button>
-              </div>
             </motion.div>
           )}
 
           {(gameState === 'PLAYING' || gameState === 'BOSS_FIGHT' || gameState === 'FRENZY' || gameState.startsWith('DLC_')) && (
-            <>
+            <div className="absolute inset-0 pointer-events-none">
+              {/* Weapon Button */}
+              {equippedWeapon !== 'none' && (
+                <div className="absolute bottom-32 right-8 flex flex-col items-center gap-2 pointer-events-auto">
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); handleWeapon(); }}
+                    className="w-20 h-20 bg-red-600 hover:bg-red-500 rounded-full border-4 border-white/20 shadow-xl flex items-center justify-center active:scale-95 transition-all"
+                  >
+                    <Sword size={32} className="text-white" />
+                  </button>
+                  <span className="text-[10px] font-black uppercase text-white drop-shadow-md">Weapon</span>
+                </div>
+              )}
+
               <div className="absolute top-32 text-8xl font-black italic opacity-20 select-none pointer-events-none">
                 {score}
               </div>
@@ -1677,7 +1958,7 @@ export default function App() {
                   <span className="text-[8px] font-black uppercase">NUKE (20G)</span>
                 </button>
               </div>
-            </>
+            </div>
           )}
 
           {gameState === 'DLC_CLT_CUTSCENE' && (
@@ -2174,13 +2455,6 @@ export default function App() {
         </motion.button>
         <motion.button 
           whileHover={{ scale: 1.1 }}
-          onClick={() => setShowBattlePass(true)}
-          className="w-8 h-8 bg-gradient-to-br from-purple-600 to-blue-700 rounded-lg flex items-center justify-center shadow-lg border border-white/20"
-        >
-          <Crown size={14} className="text-white" />
-        </motion.button>
-        <motion.button 
-          whileHover={{ scale: 1.1 }}
           onClick={() => setShowLootbox(true)}
           className="w-8 h-8 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-lg flex items-center justify-center shadow-lg border border-white/20"
         >
@@ -2275,14 +2549,13 @@ export default function App() {
           </motion.div>
         )}
 
-        {/* Battle Pass Modal */}
         {showBattlePass && (
           <motion.div 
             key="battle-pass-modal"
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4"
           >
-            <div className="bg-gray-900 w-full max-w-md rounded-3xl border-2 border-purple-500/30 overflow-hidden flex flex-col h-[70vh]">
+            <div className="bg-gray-900 w-full max-w-md rounded-3xl border-2 border-purple-500/30 overflow-hidden flex flex-col h-[80vh]">
               <div className="p-4 border-b border-white/10 flex justify-between items-center bg-gradient-to-r from-purple-600/20 to-transparent">
                 <h2 className="text-lg font-black italic uppercase flex items-center gap-2">
                   <Crown className="text-purple-400" />
@@ -2290,48 +2563,120 @@ export default function App() {
                 </h2>
                 <button onClick={() => setShowBattlePass(false)} className="p-2 hover:bg-white/10 rounded-full"><X /></button>
               </div>
+              
+              {/* Tier Selection */}
+              <div className="p-4 grid grid-cols-3 gap-2 bg-black/40 border-b border-white/5">
+                {(['STANDARD', 'PLUS', 'PRO'] as BPTier[]).map(t => {
+                  const isOwned = ownedBpTiers.includes(t);
+                  return (
+                    <div key={t} className="flex flex-col gap-1">
+                      <button 
+                        onClick={() => setBpTier(t)}
+                        className={cn(
+                          "py-2 rounded-lg text-[8px] font-black uppercase border transition-all w-full",
+                          bpTier === t ? "bg-purple-600 border-purple-400 text-white" : "bg-gray-800 border-white/5 text-gray-500"
+                        )}
+                      >
+                        {t}
+                      </button>
+                      {!isOwned && (
+                        <button 
+                          onClick={() => {
+                            const price = t === 'PLUS' ? 500 : 2000;
+                            if (coins >= price) {
+                              setCoins(c => c - price);
+                              setOwnedBpTiers(prev => [...prev, t]);
+                              setBpTier(t);
+                              confetti({ particleCount: 50, spread: 60 });
+                            } else {
+                              alert(`Need ${price} Coins for ${t} Pass!`);
+                            }
+                          }}
+                          className="bg-yellow-500 text-black text-[6px] font-black py-1 rounded uppercase"
+                        >
+                          Buy {t === 'PLUS' ? '500C' : '2000C'}
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
               <div className="p-4 bg-purple-900/20 border-b border-white/5 flex flex-col gap-2">
                 <div className="flex justify-between text-[10px] font-black uppercase">
                   <span>Progress</span>
                   <span>{battlePassXp} XP</span>
                 </div>
                 <div className="w-full h-2 bg-gray-800 rounded-full overflow-hidden">
-                  <div className="h-full bg-purple-500" style={{ width: `${Math.min(100, (battlePassXp / 3000) * 100)}%` }} />
+                  <div className="h-full bg-purple-500" style={{ width: `${Math.min(100, (battlePassXp / 5000) * 100)}%` }} />
                 </div>
               </div>
+
               <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
                 {BP_REWARDS.map(reward => {
+                  const rewardId = `${reward.level}-${reward.tier}`;
                   const isUnlocked = battlePassXp >= reward.level * 100;
-                  const isClaimed = claimedBpRewards.includes(reward.level);
+                  const isClaimed = claimedBpRewards.includes(rewardId);
+                  const canClaim = isUnlocked && !isClaimed && (
+                    reward.tier === 'STANDARD' || 
+                    (reward.tier === 'PLUS' && (bpTier === 'PLUS' || bpTier === 'PRO')) ||
+                    (reward.tier === 'PRO' && bpTier === 'PRO')
+                  );
+
                   return (
-                    <div key={reward.level} className={cn(
-                      "bg-gray-800 p-3 rounded-xl border flex justify-between items-center",
+                    <div key={rewardId} className={cn(
+                      "bg-gray-800 p-3 rounded-xl border flex justify-between items-center relative overflow-hidden",
                       isUnlocked ? "border-purple-500/50" : "border-white/5 opacity-50"
                     )}>
+                      {reward.tier !== 'STANDARD' && (
+                        <div className={cn(
+                          "absolute top-0 left-0 w-1 h-full",
+                          reward.tier === 'PLUS' ? "bg-blue-500" : "bg-yellow-500"
+                        )} />
+                      )}
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 bg-purple-900/40 rounded flex items-center justify-center font-black text-xs">
                           {reward.level}
                         </div>
                         <div className="flex flex-col">
                           <span className="text-xs font-bold">{reward.reward}</span>
-                          <span className="text-[8px] text-gray-500 uppercase">Level {reward.level} Reward</span>
+                          <span className="text-[8px] text-gray-500 uppercase">{reward.tier} Reward</span>
                         </div>
                       </div>
                       {isClaimed ? (
                         <div className="text-green-500 text-[8px] font-black uppercase">Claimed</div>
-                      ) : isUnlocked ? (
+                      ) : canClaim ? (
                         <button 
                           onClick={() => {
-                            setClaimedBpRewards(prev => [...prev, reward.level]);
+                            const rewardId = `${reward.level}-${reward.tier}`;
+                            setClaimedBpRewards(prev => [...prev, rewardId]);
                             if (reward.type === 'COINS') setCoins(c => c + (reward.value as number));
                             if (reward.type === 'GEMS') setGems(g => g + (reward.value as number));
                             if (reward.type === 'ARTIFACT') setArtifacts(a => [...a, reward.value as string]);
+                            if (reward.type === 'SKIN') setOwnedSkins(s => [...s, reward.value as string]);
+                            if (reward.type === 'WEAPON') setOwnedWeapons(w => [...w, reward.value as string]);
+                            if (reward.type === 'ITEM') {
+                              const item = ITEMS.find(i => i.id === reward.value);
+                              if (item?.name === 'ULTRA VALUE PACK') {
+                                setGems(g => g + 1000);
+                                setCoins(c => c + 10000);
+                                setSkillPoints(sp => sp + 30);
+                              } else if (item?.name === 'God Mode (1 Game)') {
+                                setIsInvincible(true);
+                              } else if (item?.name === 'Infinite Energy (24h)') {
+                                setEnergy(9999);
+                              }
+                            }
                             confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
                           }}
                           className="bg-purple-600 hover:bg-purple-500 px-3 py-1 rounded text-[8px] font-black uppercase"
                         >
                           Claim
                         </button>
+                      ) : isUnlocked ? (
+                        <div className="text-red-400 text-[8px] font-black uppercase flex items-center gap-1">
+                          <Lock size={8} /> {reward.tier}
+                        </div>
                       ) : (
                         <Lock size={12} className="text-gray-600" />
                       )}
@@ -2342,25 +2687,184 @@ export default function App() {
             </div>
           </motion.div>
         )}
-        {/* Level Up Popup */}
+        {/* Skins Modal */}
+        {showSkins && (
+          <motion.div 
+            key="skins-modal"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4"
+          >
+            <div className="bg-gray-900 w-full max-w-md rounded-3xl border-2 border-indigo-500/30 overflow-hidden flex flex-col h-[70vh]">
+              <div className="p-4 border-b border-white/10 flex justify-between items-center bg-gradient-to-r from-indigo-600/20 to-transparent">
+                <h2 className="text-lg font-black italic uppercase flex items-center gap-2">
+                  <Palette className="text-indigo-400" />
+                  Skins Collection
+                </h2>
+                <button onClick={() => setShowSkins(false)} className="p-2 hover:bg-white/10 rounded-full"><X /></button>
+              </div>
+              <div className="p-4 overflow-y-auto flex flex-col gap-4">
+                {['PLANE', 'PILOT', 'BIGODAO'].map(type => (
+                  <div key={type} className="flex flex-col gap-2">
+                    <h3 className="text-[10px] font-black uppercase text-gray-500 tracking-widest">{type} SKINS</h3>
+                    <div className="grid grid-cols-2 gap-2">
+                      {SKINS.filter(s => s.type === type).map(skin => {
+                        const isOwned = ownedSkins.includes(skin.id);
+                        const isEquipped = equippedPlaneSkin === skin.id || equippedPilotSkin === skin.id || equippedBigodaoSkin === skin.id;
+                        return (
+                          <button 
+                            key={skin.id}
+                            onClick={() => {
+                              if (isOwned) {
+                                if (type === 'PLANE') setEquippedPlaneSkin(skin.id);
+                                if (type === 'PILOT') setEquippedPilotSkin(skin.id);
+                                if (type === 'BIGODAO') setEquippedBigodaoSkin(skin.id);
+                              } else if (skin.price) {
+                                const price = skin.price;
+                                if (skin.currency === 'COINS' && coins >= price) {
+                                  setCoins(c => c - price);
+                                  setOwnedSkins(prev => [...prev, skin.id]);
+                                  confetti({ particleCount: 30 });
+                                } else if (skin.currency === 'GEMS' && gems >= price) {
+                                  setGems(g => g - price);
+                                  setOwnedSkins(prev => [...prev, skin.id]);
+                                  confetti({ particleCount: 30 });
+                                } else {
+                                  alert(`Not enough ${skin.currency}!`);
+                                }
+                              }
+                            }}
+                            className={cn(
+                              "bg-gray-800 p-3 rounded-xl border flex flex-col items-center gap-2 transition-all",
+                              isEquipped ? "border-indigo-500 bg-indigo-500/10" : "border-white/5",
+                              !isOwned && !skin.price && "opacity-50 grayscale"
+                            )}
+                          >
+                            <div className="w-12 h-12 flex items-center justify-center">
+                              {type === 'PLANE' && (
+                                skin.id === 'germany_plane' ? <img src={germanyImgPath} className="w-10 h-10 object-contain" referrerPolicy="no-referrer" /> :
+                                <Plane size={32} style={{ color: skin.color || 'white' }} />
+                              )}
+                              {type === 'PILOT' && (
+                                skin.id === 'default_pilot' ? <img src={binImgPath} className="w-10 h-10 object-contain" referrerPolicy="no-referrer" /> :
+                                <User size={32} className="text-blue-400" />
+                              )}
+                              {type === 'BIGODAO' && (
+                                skin.id === 'default_bigodao' ? <img src={bigodaoImgPath} className="w-10 h-10 object-contain" referrerPolicy="no-referrer" /> :
+                                skin.id === 'none_bigodao' ? <X size={32} className="text-gray-500" /> :
+                                <div className="text-2xl">👨‍🦰</div>
+                              )}
+                            </div>
+                            <div className="flex flex-col items-center">
+                              <span className="text-[10px] font-bold">{skin.name}</span>
+                              {!isOwned && skin.price && (
+                                <span className="text-[8px] text-yellow-500 font-black uppercase flex items-center gap-0.5 mt-0.5">
+                                  <Lock size={8} /> {skin.price}{skin.currency === 'COINS' ? 'C' : 'G'}
+                                </span>
+                              )}
+                            </div>
+                            {!isOwned && !skin.price && <Lock size={10} className="text-gray-600" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Weapons Modal */}
+        {showWeapons && (
+          <motion.div 
+            key="weapons-modal"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4"
+          >
+            <div className="bg-gray-900 w-full max-w-md rounded-3xl border-2 border-red-500/30 overflow-hidden flex flex-col h-[70vh]">
+              <div className="p-4 border-b border-white/10 flex justify-between items-center bg-gradient-to-r from-red-600/20 to-transparent">
+                <h2 className="text-lg font-black italic uppercase flex items-center gap-2">
+                  <Sword className="text-red-400" />
+                  Tactical Arsenal
+                </h2>
+                <button onClick={() => setShowWeapons(false)} className="p-2 hover:bg-white/10 rounded-full"><X /></button>
+              </div>
+              <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
+                {WEAPONS.map(w => {
+                  const isOwned = ownedWeapons.includes(w.id);
+                  const isEquipped = equippedWeapon === w.id;
+                  return (
+                    <div 
+                      key={w.id}
+                      className={cn(
+                        "bg-gray-800 p-4 rounded-2xl border flex items-center gap-4 transition-all text-left",
+                        isEquipped ? "border-red-500 bg-red-500/10" : "border-white/5"
+                      )}
+                    >
+                      <div className="w-12 h-12 bg-black/40 rounded-xl flex items-center justify-center">
+                        {w.id === 'missile' ? <Target className="text-red-500" /> : 
+                         w.id === 'nuke' ? <Trash2 className="text-red-500" /> : 
+                         w.id === 'laser' ? <Zap className="text-blue-500" /> :
+                         w.id === 'shield_burst' ? <Shield className="text-green-500" /> :
+                         w.id === 'coin_magnet' ? <Coins className="text-yellow-500" /> :
+                         <Sword className="text-gray-600" />}
+                      </div>
+                      <div className="flex flex-col flex-1">
+                        <span className="text-sm font-black uppercase">{w.name}</span>
+                        <span className="text-[10px] text-gray-400">{w.description}</span>
+                        {w.cooldown > 0 && <span className="text-[8px] text-red-400 font-bold mt-1">COOLDOWN: {w.cooldown/1000}s</span>}
+                      </div>
+                      {isOwned ? (
+                        <button 
+                          onClick={() => setEquippedWeapon(w.id)}
+                          className={cn(
+                            "px-3 py-1 rounded text-[8px] font-black uppercase",
+                            isEquipped ? "bg-red-600 text-white" : "bg-gray-700 hover:bg-gray-600"
+                          )}
+                        >
+                          {isEquipped ? "Active" : "Equip"}
+                        </button>
+                      ) : (
+                        <button 
+                          onClick={() => {
+                            const price = w.price || 0;
+                            if (w.currency === 'COINS' && coins >= price) {
+                              setCoins(c => c - price);
+                              setOwnedWeapons(prev => [...prev, w.id]);
+                              confetti({ particleCount: 30 });
+                            } else if (w.currency === 'GEMS' && gems >= price) {
+                              setGems(g => g - price);
+                              setOwnedWeapons(prev => [...prev, w.id]);
+                              confetti({ particleCount: 30 });
+                            } else {
+                              alert(`Not enough ${w.currency}!`);
+                            }
+                          }}
+                          className="bg-yellow-500 text-black px-3 py-1 rounded text-[8px] font-black uppercase flex items-center gap-1"
+                        >
+                          <Lock size={8} /> {w.price}{w.currency === 'COINS' ? 'C' : 'G'}
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </motion.div>
+        )}
         {showLevelUp && (
           <motion.div 
             key="level-up-popup"
-              initial={{ scale: 0, opacity: 0, rotate: -20 }}
-              animate={{ scale: 1, opacity: 1, rotate: 0 }}
-              exit={{ scale: 2, opacity: 0 }}
-              className="fixed inset-0 z-[1000] pointer-events-none flex flex-col items-center justify-center"
+              initial={{ y: 100, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 100, opacity: 0 }}
+              className="absolute bottom-20 left-0 w-full z-[1000] pointer-events-none flex flex-col items-center justify-center"
             >
-              <div className="relative">
-                <motion.div 
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-                  className="absolute inset-0 -m-20 bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 opacity-50 rounded-full"
-                />
-                <h2 className="text-9xl font-black italic text-white uppercase tracking-tighter relative z-10">
+              <div className="relative bg-black/80 px-8 py-4 rounded-full border-2 border-yellow-500 shadow-[0_0_30px_rgba(234,179,8,0.5)] flex flex-col items-center">
+                <h2 className="text-4xl font-black italic text-white uppercase tracking-tighter relative z-10 drop-shadow-lg">
                   LEVEL UP!
                 </h2>
-                <div className="text-center text-4xl font-black text-yellow-500 uppercase tracking-[0.5em] mt-4 relative z-10">
+                <div className="text-center text-xl font-black text-yellow-500 uppercase tracking-[0.2em] mt-1 relative z-10">
                   REACHED LEVEL {level}
                 </div>
               </div>
@@ -2374,7 +2878,7 @@ export default function App() {
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4"
           >
-            <div className="bg-gray-900 w-full max-w-md rounded-3xl border-2 border-emerald-500/30 overflow-hidden flex flex-col">
+            <div className="bg-gray-900 w-full max-w-md rounded-3xl border-2 border-emerald-500/30 overflow-hidden flex flex-col h-[70vh]">
               <div className="p-4 border-b border-white/10 flex justify-between items-center bg-gradient-to-r from-emerald-600/20 to-transparent">
                 <h2 className="text-lg font-black italic uppercase flex items-center gap-2">
                   <Target className="text-emerald-500" />
@@ -2382,11 +2886,11 @@ export default function App() {
                 </h2>
                 <button onClick={() => setShowAchievements(false)} className="p-2 hover:bg-white/10 rounded-full"><X /></button>
               </div>
-              <div className="p-4 flex flex-col gap-3">
+              <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
                 {ACHIEVEMENTS.map(ach => {
-                  const isCompleted = (ach.id === '1' && highScore >= 1) || 
-                                     (ach.id === '2' && highScore >= 10) || 
-                                     (ach.id === '3' && level >= 10);
+                  const isCompleted = (ach.type === 'TOWERS' && highScore >= ach.target) || 
+                                     (ach.type === 'SCORE' && highScore >= ach.target) ||
+                                     (ach.type === 'LEVEL' && level >= ach.target);
                   const isClaimed = claimedAchievements.includes(ach.id);
 
                   return (
@@ -2523,6 +3027,40 @@ export default function App() {
                 </h2>
                 <button onClick={() => setShowShop(false)} className="p-2 hover:bg-white/10 rounded-full"><X /></button>
               </div>
+              
+              {/* Redeem Code Section */}
+              <div className="p-4 bg-black/40 border-b border-white/5 flex flex-col gap-2">
+                <span className="text-[8px] font-black uppercase text-gray-500">Redeem Secret Code</span>
+                <div className="flex gap-2">
+                  <input 
+                    type="text" 
+                    placeholder="ENTER CODE..." 
+                    className="flex-1 bg-gray-800 border border-white/10 rounded-lg px-3 py-2 text-xs font-black uppercase tracking-widest focus:outline-none focus:border-yellow-500"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        const code = e.currentTarget.value.toUpperCase();
+                        if (REDEEM_CODES[code]) {
+                          if (redeemedCodes.includes(code)) {
+                            alert("Code already redeemed!");
+                          } else {
+                            const reward = REDEEM_CODES[code];
+                            setRedeemedCodes(prev => [...prev, code]);
+                            if (reward.type === 'COINS') setCoins(c => c + reward.value);
+                            if (reward.type === 'GEMS') setGems(g => g + reward.value);
+                            if (reward.type === 'SKIN') setOwnedSkins(s => [...s, reward.value]);
+                            confetti({ particleCount: 150, spread: 100, origin: { y: 0.5 } });
+                            alert(`REDEEMED: ${reward.reward}`);
+                          }
+                        } else {
+                          alert("Invalid Code!");
+                        }
+                        e.currentTarget.value = '';
+                      }
+                    }}
+                  />
+                </div>
+              </div>
+
               <div className="flex-1 overflow-y-auto p-6 grid grid-cols-2 gap-4">
                 {ITEMS.map(item => (
                   <div key={item.id} className="bg-gray-800 p-4 rounded-2xl border border-white/5 flex flex-col gap-3 group hover:border-yellow-500/50 transition-colors">
@@ -3129,42 +3667,73 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      {/* --- Bottom Navigation (Smaller) --- */}
-      <div className="absolute bottom-0 left-0 w-full h-12 bg-gray-900/90 border-t border-white/10 z-50 flex justify-around items-center px-2">
+      {/* --- Unified Bottom Navigation (Scrollable) --- */}
+      <div className="absolute bottom-0 left-0 w-full h-14 bg-gray-900/95 border-t border-white/10 z-[70] flex overflow-x-auto no-scrollbar items-center px-4 gap-8 scroll-smooth">
         <button 
           onClick={() => setGameState('START')}
-          className={cn("flex flex-col items-center gap-0.5", gameState === 'START' ? "text-blue-400" : "text-gray-500")}
+          className={cn("flex flex-col items-center gap-0.5 flex-shrink-0 min-w-[50px] transition-all", gameState === 'START' ? "text-blue-400 scale-110" : "text-gray-500 hover:text-blue-300")}
         >
-          <Plane size={16} />
+          <Plane size={18} />
           <span className="text-[8px] font-bold uppercase">Hangar</span>
         </button>
         <button 
-          onClick={() => setShowAchievements(true)}
-          className="flex flex-col items-center gap-0.5 text-gray-500 hover:text-emerald-400 transition-colors"
+          onClick={() => setShowSkins(true)}
+          className={cn("flex flex-col items-center gap-0.5 flex-shrink-0 min-w-[50px] transition-all hover:scale-110", showSkins ? "text-indigo-400 scale-110" : "text-gray-500 hover:text-indigo-300")}
         >
-          <Target size={16} />
+          <Palette size={18} />
+          <span className="text-[8px] font-bold uppercase">Skins</span>
+        </button>
+        <button 
+          onClick={() => setShowWeapons(true)}
+          className={cn("flex flex-col items-center gap-0.5 flex-shrink-0 min-w-[50px] transition-all hover:scale-110", showWeapons ? "text-red-400 scale-110" : "text-gray-500 hover:text-red-300")}
+        >
+          <Sword size={18} />
+          <span className="text-[8px] font-bold uppercase">Weapons</span>
+        </button>
+        <button 
+          onClick={() => setShowBattlePass(true)}
+          className={cn("flex flex-col items-center gap-0.5 flex-shrink-0 min-w-[50px] relative transition-all hover:scale-110", showBattlePass ? "text-purple-400 scale-110" : "text-gray-500 hover:text-purple-400")}
+        >
+          {!ownedBpTiers.includes('PRO') && (
+            <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-ping" />
+          )}
+          <Crown size={18} className={cn(showBattlePass ? "text-purple-400" : "text-purple-500/70")} />
+          <span className="text-[8px] font-bold uppercase">Pass</span>
+        </button>
+        <button 
+          onClick={() => setShowAchievements(true)}
+          className={cn("flex flex-col items-center gap-0.5 flex-shrink-0 min-w-[50px] transition-all hover:scale-110", showAchievements ? "text-emerald-400 scale-110" : "text-gray-500 hover:text-emerald-400")}
+        >
+          <Target size={18} />
           <span className="text-[8px] font-bold uppercase">Missions</span>
         </button>
         <button 
-          onClick={() => setShowLeaderboard(true)}
-          className="flex flex-col items-center gap-0.5 text-gray-500 hover:text-yellow-400 transition-colors"
-        >
-          <Trophy size={16} />
-          <span className="text-[8px] font-bold uppercase">Rank</span>
-        </button>
-        <button 
           onClick={() => setShowWorldMap(true)}
-          className="flex flex-col items-center gap-0.5 text-gray-500 hover:text-green-400 transition-colors"
+          className={cn("flex flex-col items-center gap-0.5 flex-shrink-0 min-w-[50px] transition-all hover:scale-110", showWorldMap ? "text-green-400 scale-110" : "text-gray-500 hover:text-green-400")}
         >
-          <Map size={16} />
+          <Map size={18} />
           <span className="text-[8px] font-bold uppercase">Map</span>
         </button>
         <button 
           onClick={() => setShowShop(true)}
-          className="flex flex-col items-center gap-0.5 text-gray-500 hover:text-blue-400 transition-colors"
+          className={cn("flex flex-col items-center gap-0.5 flex-shrink-0 min-w-[50px] transition-all hover:scale-110", showShop ? "text-yellow-400 scale-110" : "text-gray-500 hover:text-yellow-400")}
         >
-          <ShoppingBag size={16} />
+          <ShoppingBag size={18} />
           <span className="text-[8px] font-bold uppercase">Store</span>
+        </button>
+        <button 
+          onClick={() => setShowStats(true)}
+          className={cn("flex flex-col items-center gap-0.5 flex-shrink-0 min-w-[50px] transition-all hover:scale-110", showStats ? "text-purple-400 scale-110" : "text-gray-500 hover:text-purple-400")}
+        >
+          <Dna size={18} />
+          <span className="text-[8px] font-bold uppercase">Skills</span>
+        </button>
+        <button 
+          onClick={() => setShowSettings(true)}
+          className={cn("flex flex-col items-center gap-0.5 flex-shrink-0 min-w-[50px] transition-all hover:scale-110", showSettings ? "text-white scale-110" : "text-gray-500 hover:text-gray-300")}
+        >
+          <Settings size={18} />
+          <span className="text-[8px] font-bold uppercase">Settings</span>
         </button>
       </div>
 
